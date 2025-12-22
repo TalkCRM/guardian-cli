@@ -22,7 +22,8 @@ class ToolAgent(BaseAgent):
         # Initialize available tools
         from tools import (
             NmapTool, HttpxTool, SubfinderTool, NucleiTool,
-            WhatWebTool, Wafw00fTool, NiktoTool, TestSSLTool, GobusterTool
+            WhatWebTool, Wafw00fTool, NiktoTool, TestSSLTool, GobusterTool,
+            SQLMapTool, FFufTool, AmassTool, WPScanTool, SSLyzeTool, MasscanTool
         )
         
         self.available_tools = {
@@ -35,7 +36,14 @@ class ToolAgent(BaseAgent):
             "nikto": NiktoTool(config),
             "testssl": TestSSLTool(config),
             "gobuster": GobusterTool(config),
+            "sqlmap": SQLMapTool(config),
+            "ffuf": FFufTool(config),
+            "amass": AmassTool(config),
+            "wpscan": WPScanTool(config),
+            "sslyze": SSLyzeTool(config),
+            "masscan": MasscanTool(config),
         }
+
     
     async def execute(self, objective: str, target: str, **kwargs) -> Dict[str, Any]:
         """

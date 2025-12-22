@@ -40,13 +40,13 @@
 
 ### 🛠️ Extensive Tool Arsenal
 
-**9 Integrated Security Tools:**
-- **Network**: Nmap (comprehensive port scanning)
+**15 Integrated Security Tools:**
+- **Network**: Nmap (comprehensive port scanning), Masscan (ultra-fast scanning)
 - **Web Reconnaissance**: httpx (HTTP probing), WhatWeb (technology fingerprinting), Wafw00f (WAF detection)
-- **Subdomain Discovery**: Subfinder (passive enumeration)
-- **Vulnerability Scanning**: Nuclei (template-based), Nikto (web vulnerabilities)
-- **SSL/TLS Testing**: TestSSL (cipher analysis, protocol testing)
-- **Content Discovery**: Gobuster (directory/file brute forcing)
+- **Subdomain Discovery**: Subfinder (passive enumeration), Amass (active/passive mapping)
+- **Vulnerability Scanning**: Nuclei (template-based), Nikto (web vulnerabilities), SQLMap (SQL injection), WPScan (WordPress)
+- **SSL/TLS Testing**: TestSSL (cipher analysis), SSLyze (advanced configuration analysis)
+- **Content Discovery**: Gobuster (directory brute forcing), FFuf (advanced web fuzzing)
 
 ### 🔒 Security & Compliance
 
@@ -85,14 +85,20 @@ Guardian can intelligently use these tools if installed:
 | Tool | Purpose | Installation |
 |------|---------|--------------|
 | **nmap** | Port scanning | `apt install nmap` / `choco install nmap` |
+| **masscan** | Ultra-fast scan | `apt install masscan` / Build from source |
 | **httpx** | HTTP probing | `go install github.com/projectdiscovery/httpx/cmd/httpx@latest` |
 | **subfinder** | Subdomain enum | `go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest` |
+| **amass** | Network mapping | `go install github.com/owasp-amass/amass/v4/...@master` |
 | **nuclei** | Vuln scanning | `go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest` |
 | **whatweb** | Tech fingerprint | `gem install whatweb` / `apt install whatweb` |
 | **wafw00f** | WAF detection | `pip install wafw00f` |
 | **nikto** | Web vuln scan | `apt install nikto` |
+| **sqlmap** | SQL injection | `pip install sqlmap` / `apt install sqlmap` |
+| **wpscan** | WordPress scan | `gem install wpscan` |
 | **testssl** | SSL/TLS testing | Download from [testssl.sh](https://testssl.sh/) |
+| **sslyze** | SSL/TLS analysis | `pip install sslyze` |
 | **gobuster** | Directory brute | `go install github.com/OJ/gobuster/v3@latest` |
+| **ffuf** | Web fuzzing | `go install github.com/ffuf/ffuf/v2@latest` |
 
 > **Note**: Guardian works without external tools but with limited scanning capabilities. The AI will adapt based on available tools.
 
@@ -100,14 +106,45 @@ Guardian can intelligently use these tools if installed:
 
 ## 🚀 Installation
 
-### Step 1: Clone Repository
+### Option 1: Docker (Recommended - All Tools Included) 🐳
+
+**Easiest and fastest way to get started with all 15 security tools pre-installed!**
+
+```bash
+# Clone repository
+git clone https://github.com/zakirkun/guardian-cli.git
+cd guardian-cli
+
+# Create .env file with your API key
+echo "GOOGLE_API_KEY=your_api_key_here" > .env
+
+# Build Docker image (one-time, ~5 minutes)
+docker-compose build
+
+# Run Guardian
+docker-compose run --rm guardian recon --domain example.com
+```
+
+**Benefits:**
+- ✅ All 15 tools pre-installed (nmap, httpx, nuclei, sqlmap, etc.)
+- ✅ No manual tool installation required
+- ✅ Consistent environment across all systems
+- ✅ Isolated and secure
+
+**See [Docker Guide](docs/DOCKER.md) for advanced usage.**
+
+---
+
+### Option 2: Local Installation (Customizable)
+
+#### Step 1: Clone Repository
 
 ```bash
 git clone https://github.com/zakirkun/guardian-cli.git
 cd guardian-cli
 ```
 
-### Step 2: Set Up Python Environment
+#### Step 2: Set Up Python Environment
 
 **Linux/macOS:**
 ```bash
@@ -123,7 +160,7 @@ python -m venv venv
 pip install -e .
 ```
 
-### Step 3: Initialize Configuration
+#### Step 3: Initialize Configuration
 
 ```bash
 # Linux/macOS
@@ -201,6 +238,7 @@ python -m cli.main ai --last
 
 ### User Guides
 - **[Quick Start Guide](QUICKSTART.md)** - Get up and running in 5 minutes
+- **[Docker Deployment Guide](docs/DOCKER.md)** - Run Guardian with Docker (recommended)
 - **[Command Reference](docs/)** - Detailed documentation for all commands
 - **[Configuration Guide](config/guardian.yaml)** - Customize Guardian's behavior
 
@@ -233,9 +271,21 @@ guardian-cli/
 │   └── workflow.py       # Workflow orchestration
 ├── tools/                 # Pentesting tool wrappers
 │   ├── nmap.py           # Nmap integration
+│   ├── masscan.py        # Masscan integration
 │   ├── httpx.py          # httpx integration
+│   ├── subfinder.py      # Subfinder integration
+│   ├── amass.py          # Amass integration
 │   ├── nuclei.py         # Nuclei integration
-│   └── ...               # 9 tools total
+│   ├── sqlmap.py         # SQLMap integration
+│   ├── wpscan.py         # WPScan integration
+│   ├── whatweb.py        # WhatWeb integration
+│   ├── wafw00f.py        # Wafw00f integration
+│   ├── nikto.py          # Nikto integration
+│   ├── testssl.py        # TestSSL integration
+│   ├── sslyze.py         # SSLyze integration
+│   ├── gobuster.py       # Gobuster integration
+│   ├── ffuf.py           # FFuf integration
+│   └── ...               # 15 tools total
 ├── workflows/             # Workflow definitions (YAML)
 ├── utils/                 # Utilities (logging, validation)
 ├── config/                # Configuration files

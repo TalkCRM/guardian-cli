@@ -10,6 +10,12 @@ from .wafw00f import Wafw00fTool
 from .nikto import NiktoTool
 from .testssl import TestSSLTool
 from .gobuster import GobusterTool
+from .sqlmap import SQLMapTool
+from .ffuf import FFufTool
+from .amass import AmassTool
+from .wpscan import WPScanTool
+from .sslyze import SSLyzeTool
+from .masscan import MasscanTool
 
 __all__ = [
     "BaseTool",
@@ -22,4 +28,11 @@ __all__ = [
     "NiktoTool",
     "TestSSLTool",
     "GobusterTool",
+    "SQLMapTool",
+    "FFufTool",
+    "AmassTool",
+    "WPScanTool",
+    "SSLyzeTool",
+    "MasscanTool",
 ]
+
