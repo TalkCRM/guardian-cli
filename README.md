@@ -77,7 +77,7 @@
 ### Required
 
 - **Python 3.11 or higher** ([Download](https://www.python.org/downloads/))
-- **Google Gemini API Key** ([Get Free API Key](https://makersuite.google.com/app/apikey))
+- **Google Account** (for Antigravity Authentication)
 - **Git** (for cloning repository)
 
 ### Optional Tools (for full functionality)
@@ -179,6 +179,13 @@ python -m cli.main init
 .\guardian.bat init
 ```
 
+#### Step 4: Authenticate with Antigravity
+
+```bash
+python -m cli.main auth login
+```
+This will open your browser to log in with your Google account.
+
 During initialization, you'll be prompted for your Gemini API key. Alternatively, create a `.env` file:
 
 ```bash
@@ -235,6 +242,15 @@ python -m cli.main report --session 20251222_120000 --format html
 ```bash
 # View AI decision-making process
 python -m cli.main ai --last
+```
+
+#### 7. Use Specific A Models
+```bash
+# Recon with Gemini 3 Pro
+python -m cli.main recon --domain example.com --model gemini-3-pro
+
+# Workflow with Gemini 3 Flash
+python -m cli.main workflow run --name web --target example.com --model gemini-3-flash
 ```
 
 > **Windows Users**: Use `python -m cli.main` or `.\guardian.bat` instead of `guardian`

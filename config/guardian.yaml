@@ -39,7 +39,7 @@ output:
   include_reasoning: true
   
   # Verbosity level: quiet, normal, verbose, debug
-  verbosity: normal
+  verbosity: quiet
 
 # Scope Validation
 scope:

@@ -27,6 +27,11 @@
    .\guardian.bat init
    ```
 
+5. **Login to Antigravity**:
+   ```cmd
+   python -m cli.main auth login
+   ```
+
 ## Common Commands
 
 ### List Available Workflows
@@ -47,6 +52,11 @@ python -m cli.main scan --target scanme.nmap.org
 ### Run Full Workflow
 ```cmd
 python -m cli.main workflow run --name recon --target example.com
+```
+
+### Run with Specific AI Model
+```cmd
+python -m cli.main recon --domain example.com --model gemini-3-pro
 ```
 
 ## Configuration
