@@ -244,7 +244,19 @@ python -m cli.main ai --last
 ```bash
 # List available models
 python -m cli.main models
+```
 
+**Available Models:**
+| Model Name | Provider | Source | Capabilities |
+|------------|----------|--------|--------------|
+| `gemini-3-pro` | Google | Antigravity | Reasoning, High Intelligence |
+| `gemini-3-flash` | Google | Antigravity | Reasoning, Speed |
+| `gemini-2.5-pro` | Google | Gemini CLI | General Purpose, Stable |
+| `gemini-2.5-flash` | Google | Gemini CLI | Lower Latency, Cost Effective |
+| `claude-sonnet-4-5`| Anthropic| Antigravity | Advanced Reasoning, Coding |
+| `claude-opus-4-5` | Anthropic| Antigravity | Maximum Capability |
+
+```bash
 # Recon with Gemini 3 Pro
 python -m cli.main recon --domain example.com --model gemini-3-pro
 
