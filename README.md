@@ -119,11 +119,11 @@ Guardian can intelligently use these tools if installed:
 
 ```bash
 # Clone repository
-git clone https://github.com/zakirkun/guardian-cli.git
+git clone https://github.com/firdyfirdy/guardian-cli.git
 cd guardian-cli
 
-# Create .env file with your API key
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
+# Create .env file (optional, for other settings)
+touch .env
 
 # Build Docker image (one-time, ~5 minutes)
 docker-compose build
@@ -147,7 +147,7 @@ docker-compose run --rm guardian recon --domain example.com
 #### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/zakirkun/guardian-cli.git
+git clone https://github.com/firdyfirdy/guardian-cli.git
 cd guardian-cli
 ```
 
@@ -186,11 +186,7 @@ python -m cli.main auth login
 ```
 This will open your browser to log in with your Google account.
 
-During initialization, you'll be prompted for your Gemini API key. Alternatively, create a `.env` file:
-
-```bash
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
-```
+During initialization, the tool will set up necessary configurations. Unlike previous versions, you do **not** need to manually set a Gemini API key. Authentication is handled via the `guardian auth` command.
 
 ---
 
@@ -459,8 +455,8 @@ in the Software without restriction...
 
 ## 📞 Support & Contact
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/zakirkun/guardian-cli/issues)
-- **Discussions**: [Join community discussions](https://github.com/zakirkun/guardian-cli/discussions)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/firdyfirdy/guardian-cli/issues)
+- **Discussions**: [Join community discussions](https://github.com/firdyfirdy/guardian-cli/discussions)
 - **Documentation**: [Read the docs](docs/)
 - **Security**: Report vulnerabilities privately to security@example.com
 
