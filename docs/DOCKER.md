@@ -230,7 +230,7 @@ docker-scan:
 
 **Solution**: Fix permissions:
 ```bash
-chmod 777 ./reports ./logs
+chmod 777 -R ./reports ./logs
 ```
 
 ### Issue: Tool not found
