@@ -99,12 +99,26 @@ def main():
 
 if __name__ == "__main__":
     # Check if logged in before running
+    # Check authentication status
     try:
-        from antigravity_auth import AntigravityService, NoAccountsError
-        service = AntigravityService(quiet_mode=True)
-        if not service.get_accounts():
-             console.print("[yellow]⚠️  No Antigravity accounts found.[/yellow]")
-             console.print("[yellow]   Please run 'guardian auth login' to authenticate before using AI features.[/yellow]\n")
+        from antigravity_auth import AntigravityService
+        # Check if user has Antigravity accounts
+        has_accounts = False
+        try:
+            service = AntigravityService(quiet_mode=True)
+            if service.get_accounts():
+                has_accounts = True
+        except Exception:
+            pass
+
+        # Check if user has API Key
+        import os
+        has_api_key = bool(os.environ.get("GOOGLE_API_KEY"))
+
+        if not has_accounts and not has_api_key:
+             console.print("[yellow]⚠️  No Authentication Found[/yellow]")
+             console.print("[yellow]   - To use Antigravity (free, quota-based): run 'guardian auth login'[/yellow]")
+             console.print("[yellow]   - To use Standard API: set GOOGLE_API_KEY environment variable[/yellow]\n")
     except ImportError:
         pass
     except Exception:

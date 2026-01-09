@@ -179,14 +179,38 @@ python -m cli.main init
 .\guardian.bat init
 ```
 
-#### Step 4: Authenticate with Antigravity
+
+#### Step 4: Configure Authentication
+
+Guardian supports two authentication methods. Choose the one that suits you best:
+
+**Method A: Antigravity Auth (Recommended for free, quota-based access)**
+This method uses your Google Account cookies to access Gemini models via internal quotas.
 
 ```bash
 python -m cli.main auth login
 ```
 This will open your browser to log in with your Google account.
 
-During initialization, the tool will set up necessary configurations. Unlike previous versions, you do **not** need to manually set a Gemini API key. Authentication is handled via the `guardian auth` command.
+**Method B: Standard Gemini API Key (For BYO Key)**
+This method uses your personal Google AI Studio API Key.
+
+1. Get your API Key from [Google AI Studio](https://makersuite.google.com/app/apikey).
+2. Set the environment variable:
+   ```bash
+   # Linux/macOS
+   export GOOGLE_API_KEY="your_api_key_here"
+   
+   # Windows PowerShell
+   $env:GOOGLE_API_KEY="your_api_key_here"
+   ```
+3. (Optional) Create a `.env` file in the project root:
+   ```bash
+   echo "GOOGLE_API_KEY=your_api_key_here" > .env
+   ```
+
+Guardian will automatically detect which method to use. You can also enforce a specific method in `config/guardian.yaml` by setting `auth_method` to `antigravity` or `api_key`.
+
 
 ---
 

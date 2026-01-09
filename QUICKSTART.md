@@ -24,12 +24,17 @@
    ```
    Or use the batch launcher:
    ```cmd
-   .\guardian.bat init
-   ```
+5. **Configure Authentication**:
 
-5. **Login to Antigravity**:
+   **Option A: Antigravity Auth (Free/Quota)**
    ```cmd
    python -m cli.main auth login
+   ```
+
+   **Option B: Standard API Key**
+   Create a `.env` file with your key:
+   ```cmd
+   echo GOOGLE_API_KEY=your_key_here > .env
    ```
 
 ## Common Commands

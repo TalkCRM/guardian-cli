@@ -5,6 +5,10 @@
 ai:
   provider: gemini
   model: gemini-2.5-pro
+  # Authentication Method: 'auto', 'antigravity', or 'api_key'
+  auth_method: auto
+  # API Key (optional, can be set via env GOOGLE_API_KEY)
+  api_key: null
   temperature: 0.2
   max_tokens: 8000
   timeout: 60
