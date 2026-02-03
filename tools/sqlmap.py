@@ -18,8 +18,12 @@ class SQLMapTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build sqlmap command"""
+        # Get config defaults
         config = self.config.get("tools", {}).get("sqlmap", {})
         safe_mode = self.config.get("pentest", {}).get("safe_mode", True)
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
         
         command = ["sqlmap"]
         
@@ -43,37 +47,47 @@ class SQLMapTool(BaseTool):
         command.extend(["--risk", str(risk)])
         command.extend(["--level", str(level)])
         
-        # Threads for speed
-        threads = config.get("threads", 1)
+        # Threads for speed - workflow parameter or config or default
+        threads = kwargs.get("threads", config.get("threads", 1))
         command.extend(["--threads", str(threads)])
         
-        # Timeout per HTTP request
-        timeout = config.get("timeout", 30)
+        # Timeout per HTTP request - workflow parameter or config or default
+        timeout = kwargs.get("timeout", config.get("timeout", 30))
         command.extend(["--timeout", str(timeout)])
         
         # Techniques (if specified)
         if "technique" in kwargs:
             command.extend(["--technique", kwargs["technique"]])
+        elif "technique" in config:
+            command.extend(["--technique", config["technique"]])
         
         # Database enumeration (only if not in safe mode)
-        if not safe_mode and kwargs.get("enumerate"):
+        if not safe_mode and kwargs.get("enumerate", config.get("enumerate", False)):
             command.append("--dbs")
         
         # Specific database
         if "database" in kwargs:
             command.extend(["-D", kwargs["database"]])
+        elif "database" in config:
+            command.extend(["-D", config["database"]])
         
         # POST data
         if "data" in kwargs:
             command.extend(["--data", kwargs["data"]])
+        elif "data" in config:
+            command.extend(["--data", config["data"]])
         
         # Cookie
         if "cookie" in kwargs:
             command.extend(["--cookie", kwargs["cookie"]])
+        elif "cookie" in config:
+            command.extend(["--cookie", config["cookie"]])
         
         # Tamper scripts
         if "tamper" in kwargs:
             command.extend(["--tamper", kwargs["tamper"]])
+        elif "tamper" in config:
+            command.extend(["--tamper", config["tamper"]])
         
         # Random user agent
         command.append("--random-agent")

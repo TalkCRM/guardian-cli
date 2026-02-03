@@ -4,6 +4,7 @@ guardian workflow - Run predefined workflows
 
 import typer
 import asyncio
+import yaml
 from rich.console import Console
 from rich.table import Table
 from pathlib import Path
@@ -60,17 +61,44 @@ def workflow_command(
 
 
 def _list_workflows():
-    """List available workflows"""
+    """List available workflows from YAML files"""
+    # Find workflows directory
+    # Assuming we're in cli/commands and workflows is at project root
+    project_root = Path(__file__).parent.parent.parent
+    workflows_dir = project_root / "workflows"
+    
     table = Table(title="Available Workflows")
     table.add_column("Name", style="cyan")
     table.add_column("Description", style="white")
+    table.add_column("Steps", style="yellow")
     
-    table.add_row("recon", "Reconnaissance: subdomain enum, port scan, tech detection")
-    table.add_row("web", "Web Application: HTTP probing, vulnerability scanning")
-    table.add_row("network", "Network Infrastructure: port scanning, service detection")
-    table.add_row("autonomous", "AI-Driven: fully autonomous testing with AI decisions")
+    if not workflows_dir.exists():
+        console.print(f"[bold red]Error:[/bold red] Workflows directory not found: {workflows_dir}")
+        return
+    
+    # Load all YAML workflow files
+    workflow_files = sorted(workflows_dir.glob("*.yaml"))
+    
+    if not workflow_files:
+        console.print("[bold yellow]No workflow files found in workflows directory[/bold yellow]")
+        return
+    
+    for workflow_file in workflow_files:
+        try:
+            with open(workflow_file, 'r', encoding='utf-8') as f:
+                workflow_data = yaml.safe_load(f)
+            
+            name = workflow_file.stem  # Filename without extension
+            description = workflow_data.get('description', 'No description available')
+            steps_count = len(workflow_data.get('steps', []))
+            
+            table.add_row(name, description, str(steps_count))
+            
+        except Exception as e:
+            console.print(f"[yellow]Warning: Failed to load {workflow_file.name}: {e}[/yellow]")
     
     console.print(table)
+
 
 
 def _run_workflow(name: str, target: str, config_file: Path, model: str = None):

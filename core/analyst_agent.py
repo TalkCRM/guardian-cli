@@ -44,7 +44,8 @@ class AnalystAgent(BaseAgent):
         tool: str,
         target: str,
         command: str,
-        output: str
+        output: str,
+        execution_id: str = None
     ) -> Dict[str, Any]:
         """
         Interpret tool output and extract security findings
@@ -65,8 +66,14 @@ class AnalystAgent(BaseAgent):
         
         result = await self.think(prompt, ANALYST_SYSTEM_PROMPT)
         
-        # Parse findings from AI response
-        findings = self._parse_findings(result["response"], tool, target)
+        # Parse findings from AI response and link to execution
+        findings = self._parse_findings(
+            result["response"], 
+            tool, 
+            target, 
+            execution_id=execution_id,
+            raw_output=output
+        )
         
         # Add findings to memory
         for finding in findings:
@@ -141,8 +148,15 @@ class AnalystAgent(BaseAgent):
             "recommendation": self._extract_recommendation(result["response"])
         }
     
-    def _parse_findings(self, ai_response: str, tool: str, target: str) -> List[Finding]:
-        """Parse findings from AI analysis response"""
+    def _parse_findings(
+        self, 
+        ai_response: str, 
+        tool: str, 
+        target: str,
+        execution_id: str = None,
+        raw_output: str = ""
+    ) -> List[Finding]:
+        """Parse findings from AI analysis response and link to execution"""
         findings = []
         
         # Simple parsing - look for severity markers
@@ -169,7 +183,9 @@ class AnalystAgent(BaseAgent):
                         evidence="",
                         tool=tool,
                         target=target,
-                        timestamp=datetime.now().isoformat()
+                        timestamp=datetime.now().isoformat(),
+                        execution_id=execution_id,
+                        raw_evidence=raw_output[:2000] if raw_output else None
                     )
                     break
             

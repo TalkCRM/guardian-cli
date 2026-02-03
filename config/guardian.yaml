@@ -3,16 +3,35 @@
 
 # AI Configuration
 ai:
-  provider: gemini
-  model: gemini-2.5-pro
-  # Authentication Method: 'auto', 'antigravity', or 'api_key'
-  auth_method: auto
-  # API Key (optional, can be set via env GOOGLE_API_KEY)
-  api_key: null
+  # Active Provider: gemini, openai, claude, openrouter
+  provider: openai
+  
+  # Gemini Configuration
+  gemini:
+    model: gemini-2.5-pro
+    api_key: null  # Or set GOOGLE_API_KEY environment variable
+  
+  # OpenAI Configuration  
+  openai:
+    model: gpt-4o
+    api_key: null  # Or set OPENAI_API_KEY environment variable
+  
+  # Claude (Anthropic) Configuration
+  claude:
+    model: claude-3-5-sonnet-20241022
+    api_key: null  # Or set ANTHROPIC_API_KEY environment variable
+  
+  # OpenRouter Configuration
+  openrouter:
+    model: anthropic/claude-3.5-sonnet
+    api_key: null  # Or set OPENROUTER_API_KEY environment variable
+  
+  # General AI Settings (applied to all providers)
   temperature: 0.2
   max_tokens: 8000
   timeout: 60
   rate_limit: 2
+
 
 # Penetration Testing Settings
 pentest:

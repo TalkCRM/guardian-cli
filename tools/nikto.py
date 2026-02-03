@@ -17,24 +17,31 @@ class NiktoTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build nikto command"""
+        # Get config defaults
+        config = self.config.get("tools", {}).get("nikto", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
+        
         command = ["nikto"]
         
         # Host
         command.extend(["-h", target])
         
-        # Output format
-        command.extend(["-Format", "txt"])
+        # Output format - workflow parameter or config or default
+        output_format = kwargs.get("format", config.get("format", "txt"))
+        command.extend(["-Format", output_format])
         
         # SSL
         if target.startswith("https"):
             command.append("-ssl")
         
-        # Tuning options
-        tuning = kwargs.get("tuning", "x")  # Default: all tests except DoS
+        # Tuning options - workflow parameter or config or default
+        tuning = kwargs.get("tuning", config.get("tuning", "x"))  # Default: all tests except DoS
         command.extend(["-Tuning", tuning])
         
-        # Timeout
-        timeout = kwargs.get("timeout", 10)
+        # Timeout - workflow parameter or config or default
+        timeout = kwargs.get("timeout", config.get("timeout", 10))
         command.extend(["-timeout", str(timeout)])
         
         # No interactive mode

@@ -33,12 +33,7 @@ app.command(name="workflow")(workflow.workflow_command)
 app.command(name="ai")(ai_explain.explain_command)
 app.command(name="models")(models.list_models_command)
 
-# Register Antigravity Auth commands
-try:
-    from antigravity_auth.cli.main import auth_app as antigravity_auth_app
-    app.add_typer(antigravity_auth_app, name="auth", help="🔐 Manage Antigravity Authentication")
-except ImportError:
-    console.print("[yellow]Warning: Antigravity Auth library not found. Auth commands disabled.[/yellow]")
+
 
 
 @app.callback()
@@ -98,29 +93,15 @@ def main():
 
 
 if __name__ == "__main__":
-    # Check if logged in before running
-    # Check authentication status
+    # Check if API key is set
     try:
-        from antigravity_auth import AntigravityService
-        # Check if user has Antigravity accounts
-        has_accounts = False
-        try:
-            service = AntigravityService(quiet_mode=True)
-            if service.get_accounts():
-                has_accounts = True
-        except Exception:
-            pass
-
-        # Check if user has API Key
         import os
         has_api_key = bool(os.environ.get("GOOGLE_API_KEY"))
 
-        if not has_accounts and not has_api_key:
-             console.print("[yellow]⚠️  No Authentication Found[/yellow]")
-             console.print("[yellow]   - To use Antigravity (free, quota-based): run 'guardian auth login'[/yellow]")
-             console.print("[yellow]   - To use Standard API: set GOOGLE_API_KEY environment variable[/yellow]\n")
-    except ImportError:
-        pass
+        if not has_api_key:
+             console.print("[yellow]⚠️  No API Key Found[/yellow]")
+             console.print("[yellow]   - Set GOOGLE_API_KEY environment variable[/yellow]")
+             console.print("[yellow]   - Get your API key from: https://aistudio.google.com/apikey[/yellow]\n")
     except Exception:
         pass
 

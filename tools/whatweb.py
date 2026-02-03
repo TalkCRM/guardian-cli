@@ -17,21 +17,27 @@ class WhatWebTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build whatweb command"""
+        # Get config defaults
+        config = self.config.get("tools", {}).get("whatweb", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
+        
         command = ["whatweb"]
         
         # JSON output for parsing
         command.extend(["--log-json=-"])
         
-        # Aggression level (1-4)
-        aggression = kwargs.get("aggression", 1)
+        # Aggression level (1-4) - workflow parameter or config or default
+        aggression = kwargs.get("aggression", config.get("aggression", 1))
         command.extend(["-a", str(aggression)])
         
-        # Follow redirects
-        if kwargs.get("follow_redirects", True):
+        # Follow redirects - workflow parameter or config or default
+        if kwargs.get("follow_redirects", config.get("follow_redirects", True)):
             command.append("--follow-redirect=always")
         
-        # User agent
-        user_agent = kwargs.get("user_agent", "Guardian-Pentest-Tool")
+        # User agent - workflow parameter or config or default
+        user_agent = kwargs.get("user_agent", config.get("user_agent", "Guardian-Pentest-Tool"))
         command.extend(["--user-agent", user_agent])
         
         # Target

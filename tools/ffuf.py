@@ -17,7 +17,11 @@ class FFufTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build ffuf command"""
+        # Get config defaults
         config = self.config.get("tools", {}).get("ffuf", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
         
         command = ["ffuf"]
         
@@ -27,7 +31,7 @@ class FFufTool(BaseTool):
             target = f"{target}/FUZZ"
         command.extend(["-u", target])
         
-        # Wordlist (required)
+        # Wordlist (required) - workflow parameter or config or default
         wordlist = kwargs.get("wordlist", config.get("wordlist", "/usr/share/wordlists/dirb/common.txt"))
         command.extend(["-w", wordlist])
         
@@ -35,21 +39,25 @@ class FFufTool(BaseTool):
         command.extend(["-of", "json"])
         command.extend(["-o", "-"])  # Output to stdout
         
-        # Threads
-        threads = config.get("threads", 40)
+        # Threads - workflow parameter or config or default
+        threads = kwargs.get("threads", config.get("threads", 40))
         command.extend(["-t", str(threads)])
         
-        # Timeout
-        timeout = config.get("timeout", 10)
+        # Timeout - workflow parameter or config or default
+        timeout = kwargs.get("timeout", config.get("timeout", 10))
         command.extend(["-timeout", str(timeout)])
         
         # Filter by status code
         if "filter_status" in kwargs:
             command.extend(["-fc", kwargs["filter_status"]])
+        elif "filter_status" in config:
+            command.extend(["-fc", config["filter_status"]])
         
         # Match status code
         if "match_status" in kwargs:
             command.extend(["-mc", kwargs["match_status"]])
+        elif "match_status" in config:
+            command.extend(["-mc", config["match_status"]])
         else:
             # Default: match success codes
             command.extend(["-mc", "200,204,301,302,307,401,403"])
@@ -57,24 +65,30 @@ class FFufTool(BaseTool):
         # Filter by size
         if "filter_size" in kwargs:
             command.extend(["-fs", str(kwargs["filter_size"])])
+        elif "filter_size" in config:
+            command.extend(["-fs", str(config["filter_size"])])
         
         # Extensions
         if "extensions" in kwargs:
             command.extend(["-e", kwargs["extensions"]])
+        elif "extensions" in config:
+            command.extend(["-e", config["extensions"]])
         
         # Recursion
-        if kwargs.get("recursion"):
+        if kwargs.get("recursion", config.get("recursion", False)):
             command.append("-recursion")
-            recursion_depth = kwargs.get("recursion_depth", 1)
+            recursion_depth = kwargs.get("recursion_depth", config.get("recursion_depth", 1))
             command.extend(["-recursion-depth", str(recursion_depth)])
         
         # Follow redirects
-        if config.get("follow_redirects", False):
+        if kwargs.get("follow_redirects", config.get("follow_redirects", False)):
             command.append("-r")
         
         # Rate limit (requests per second)
         if "rate" in kwargs:
             command.extend(["-rate", str(kwargs["rate"])])
+        elif "rate" in config:
+            command.extend(["-rate", str(config["rate"])])
         
         # Silent mode (less verbose)
         command.append("-s")

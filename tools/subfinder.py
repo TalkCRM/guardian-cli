@@ -17,7 +17,11 @@ class SubfinderTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build subfinder command"""
+        # Get config defaults
         config = self.config.get("tools", {}).get("subfinder", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
         
         command = ["subfinder"]
         
@@ -30,13 +34,17 @@ class SubfinderTool(BaseTool):
         # Silent mode (only output)
         command.append("-silent")
         
-        # Sources
-        sources = config.get("sources", [])
+        # Sources - workflow parameter or config or empty
+        sources = kwargs.get("sources", config.get("sources", []))
         if sources:
-            command.extend(["-sources", ",".join(sources)])
+            # Convert list to comma-separated string if needed
+            if isinstance(sources, list):
+                command.extend(["-sources", ",".join(sources)])
+            else:
+                command.extend(["-sources", sources])
         
-        # All sources
-        if kwargs.get("all_sources"):
+        # All sources - workflow parameter or kwargs
+        if kwargs.get("all_sources", config.get("all_sources", False)):
             command.append("-all")
         
         return command

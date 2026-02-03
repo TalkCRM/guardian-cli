@@ -119,7 +119,7 @@ Guardian can intelligently use these tools if installed:
 
 ```bash
 # Clone repository
-git clone https://github.com/firdyfirdy/guardian-cli.git
+git clone https://github.com/zakirkun/guardian-cli.git
 cd guardian-cli
 
 # Create .env file (optional, for other settings)
@@ -147,7 +147,7 @@ docker-compose run --rm guardian recon --domain example.com
 #### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/firdyfirdy/guardian-cli.git
+git clone https://github.com/zakirkun/guardian-cli.git
 cd guardian-cli
 ```
 
@@ -384,7 +384,7 @@ We welcome contributions! Here's how:
 
 ```bash
 # Fork and clone
-git clone https://github.com/firdyfirdy/guardian-cli.git
+git clone https://github.com/zakirkun/guardian-cli.git
 cd guardian-cli
 
 # Install dev dependencies
@@ -462,7 +462,7 @@ python -m cli.main --help
 .\guardian.bat --help
 ```
 
-For more help, [open an issue](https://github.com/firdyfirdy/guardian-cli/issues).
+For more help, [open an issue](https://github.com/zakirkun/guardian-cli/issues).
 
 ---
 
@@ -494,8 +494,8 @@ in the Software without restriction...
 
 ## 📞 Support & Contact
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/firdyfirdy/guardian-cli/issues)
-- **Discussions**: [Join community discussions](https://github.com/firdyfirdy/guardian-cli/discussions)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/zakirkun/guardian-cli/issues)
+- **Discussions**: [Join community discussions](https://github.com/zakirkun/guardian-cli/discussions)
 - **Documentation**: [Read the docs](docs/)
 - **Security**: Report vulnerabilities privately to security@example.com
 

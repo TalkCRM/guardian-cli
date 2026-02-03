@@ -17,30 +17,36 @@ class GobusterTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build gobuster command"""
+        # Get config defaults
+        config = self.config.get("tools", {}).get("gobuster", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
+        
         command = ["gobuster", "dir"]
         
         # Target URL
         command.extend(["-u", target])
         
-        # Wordlist
-        wordlist = kwargs.get("wordlist", "/usr/share/wordlists/dirb/common.txt")
+        # Wordlist - workflow parameter or config or default
+        wordlist = kwargs.get("wordlist", config.get("wordlist", "/usr/share/wordlists/dirb/common.txt"))
         command.extend(["-w", wordlist])
         
-        # Threads
-        threads = kwargs.get("threads", 10)
+        # Threads - workflow parameter or config or default
+        threads = kwargs.get("threads", config.get("threads", 10))
         command.extend(["-t", str(threads)])
         
-        # Status codes to look for
-        status_codes = kwargs.get("status_codes", "200,204,301,302,307,401,403")
+        # Status codes to look for - workflow parameter or config or default
+        status_codes = kwargs.get("status_codes", config.get("status_codes", "200,204,301,302,307,401,403"))
         command.extend(["-s", status_codes])
         
-        # Extensions
-        extensions = kwargs.get("extensions", "")
+        # Extensions - workflow parameter or config or empty
+        extensions = kwargs.get("extensions", config.get("extensions", ""))
         if extensions:
             command.extend(["-x", extensions])
         
-        # Timeout
-        timeout = kwargs.get("timeout", 10)
+        # Timeout - workflow parameter or config or default
+        timeout = kwargs.get("timeout", config.get("timeout", 10))
         command.extend(["--timeout", f"{timeout}s"])
         
         # Quiet mode

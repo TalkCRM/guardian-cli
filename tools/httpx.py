@@ -17,29 +17,36 @@ class HttpxTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build httpx command"""
+        # Get config defaults
         config = self.config.get("tools", {}).get("httpx", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
         
         command = ["httpx"]
         
         # JSON output for easy parsing
         command.extend(["-j"])
         
-        # Threads
-        threads = config.get("threads", 50)
+        # Threads - workflow parameter or config or default
+        threads = kwargs.get("threads", config.get("threads", 50))
         command.extend(["-threads", str(threads)])
         
-        # Timeout
-        timeout = config.get("timeout", 10)
+        # Timeout - workflow parameter or config or default
+        timeout = kwargs.get("timeout", config.get("timeout", 10))
         command.extend(["-timeout", str(timeout)])
         
-        # Tech detection
-        command.append("-tech-detect")
+        # Tech detection -workflow parameter or config or default
+        if kwargs.get("tech_detect", config.get("tech_detect", True)):
+            command.append("-tech-detect")
         
-        # Status code
-        command.append("-status-code")
+        # Status code - workflow parameter or config or default
+        if kwargs.get("status_code", config.get("status_code", True)):
+            command.append("-status-code")
         
-        # Title
-        command.append("-title")
+        # Title - workflow parameter or config or default
+        if kwargs.get("title", config.get("title", True)):
+            command.append("-title")
         
         # Target (from stdin or direct)
         if kwargs.get("from_file"):

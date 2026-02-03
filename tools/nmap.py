@@ -14,29 +14,38 @@ class NmapTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build nmap command"""
+        # Get config defaults
         config = self.config.get("tools", {}).get("nmap", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
         
         # Base command
         command = ["nmap"]
         
-        # Add default args from config
-        default_args = config.get("default_args", "-sV -sC")
+        # Default args - workflow parameter or config or default
+        default_args = kwargs.get("default_args", config.get("default_args", "-sV -sC"))
         if default_args:
             command.extend(default_args.split())
         
-        # Timing template
-        timing = config.get("timing", "T4")
+        # Timing template - workflow parameter or config or default
+        timing = kwargs.get("timing", config.get("timing", "T4"))
         command.append(f"-{timing}")
         
         # XML output for parsing
         command.extend(["-oX", "-"])
         
-        # Custom args from kwargs
+        # Ports - workflow parameter overrides
         if "ports" in kwargs:
             command.extend(["-p", kwargs["ports"]])
+        elif "ports" in config:
+            command.extend(["-p", config["ports"]])
         
+        # Scan type - workflow parameter overrides
         if "scan_type" in kwargs:
             command.append(kwargs["scan_type"])
+        elif "scan_type" in config:
+            command.append(config["scan_type"])
         
         # Target
         command.append(target)

@@ -4,7 +4,7 @@
 # ============================================================================
 # Stage 1: Builder - Install Go tools and build dependencies
 # ============================================================================
-FROM golang:1.25-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
 WORKDIR /build
 

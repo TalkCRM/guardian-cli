@@ -17,7 +17,11 @@ class NucleiTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build nuclei command"""
+        # Get config defaults
         config = self.config.get("tools", {}).get("nuclei", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
         
         command = ["nuclei"]
         
@@ -30,21 +34,26 @@ class NucleiTool(BaseTool):
         # JSON output
         command.extend(["-jsonl"])
         
-        # Severity filtering
-        severities = config.get("severity", ["critical", "high", "medium"])
+        # Severity filtering - workflow parameter or config or default
+        severities = kwargs.get("severity", config.get("severity", ["critical", "high", "medium"]))
         if severities:
-            command.extend(["-severity", ",".join(severities)])
+            # Convert list to comma-separated string if needed
+            if isinstance(severities, list):
+                command.extend(["-severity", ",".join(severities)])
+            else:
+                command.extend(["-severity", severities])
         
-        # Templates path
-        templates_path = config.get("templates_path")
+        # Templates path - workflow parameter or config or None
+        templates_path = kwargs.get("templates_path", config.get("templates_path"))
         if templates_path:
             command.extend(["-t", templates_path])
         
         # Silent mode
         command.append("-silent")
         
-        # Rate limit
-        command.extend(["-rate-limit", "150"])
+        # Rate limit - workflow parameter or config or default
+        rate_limit = kwargs.get("rate_limit", config.get("rate_limit", 150))
+        command.extend(["-rate-limit", str(rate_limit)])
         
         return command
     

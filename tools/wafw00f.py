@@ -17,13 +17,19 @@ class Wafw00fTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build wafw00f command"""
+        # Get config defaults
+        config = self.config.get("tools", {}).get("wafw00f", {})
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
+        
         command = ["wafw00f"]
         
         # Verbose output
         command.append("-v")
         
-        # Find all WAFs
-        if kwargs.get("find_all", True):
+        # Find all WAFs - workflow parameter or config or default
+        if kwargs.get("find_all", config.get("find_all", True)):
             command.append("-a")
         
         # Target

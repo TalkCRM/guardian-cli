@@ -180,13 +180,32 @@ class WorkflowEngine:
             )
             
             if result.get("success"):
-                # Use Analyst Agent to interpret results
+                # Generate unique execution ID for this tool run
+                import time
+                execution_id = f"{tool_name}_{int(time.time() * 1000)}"
+                
+                # Store execution with ID and full output
+                from core.memory import ToolExecution
+                execution = ToolExecution(
+                    id=execution_id,
+                    tool=tool_name,
+                    command=result.get("command", ""),
+                    target=self.target,
+                    timestamp=datetime.now().isoformat(),
+                    exit_code=result.get("exit_code", 0),
+                    output=result.get("raw_output", ""),  # Store the FULL raw output
+                    duration=result.get("duration", 0)
+                )
+                self.memory.add_tool_execution(execution)
+                
+                # Use Analyst Agent to interpret results and link to execution
                 self.logger.info("Analyst Agent analyzing results...")
                 analysis = await self.analyst.interpret_output(
                     tool=tool_name,
                     target=self.target,
                     command=result.get("command", ""),
-                    output=result.get("raw_output", "")
+                    output=result.get("raw_output", ""),
+                    execution_id=execution_id  # Pass execution ID to analyst
                 )
                 
                 self.logger.info(f"Found {len(analysis['findings'])} findings from {tool_name}")
@@ -200,15 +219,22 @@ class WorkflowEngine:
             self.logger.info("Correlation analysis complete")
             
         elif step_type == "report":
-            # Generate report
-            self.logger.info(f"Generating {step.get('format', 'markdown')} report...")
-            report = await self.reporter.execute(format=step.get("format", "markdown"))
+            # Generate report using config format as default
+            config_format = self.config.get("output", {}).get("format", "markdown")
+            report_format = step.get("format", config_format)  # Use config default if step doesn't specify
+            
+            self.logger.info(f"Generating {report_format} report...")
+            report = await self.reporter.execute(format=report_format)
             
             # Save report
             output_dir = Path(self.config.get("output", {}).get("save_path", "./reports"))
             output_dir.mkdir(parents=True, exist_ok=True)
             
-            report_file = output_dir / f"report_{self.memory.session_id}.{step.get('format', 'md')}"
+            # Use proper file extension
+            extension_map = {"markdown": "md", "html": "html", "json": "json"}
+            extension = extension_map.get(report_format, "md")
+            report_file = output_dir / f"report_{self.memory.session_id}.{extension}"
+            
             with open(report_file, 'w', encoding='utf-8') as f:
                 f.write(report["content"])
             
@@ -252,29 +278,83 @@ class WorkflowEngine:
         self.memory.mark_action_complete(action)
     
     def _load_workflow(self, workflow_name: str) -> List[Dict[str, Any]]:
-        """Load workflow definition"""
-        # Predefined workflows
-        workflows = {
-            "recon": [
+        """Load workflow definition from YAML file"""
+        import yaml
+        
+        # Determine project root and workflows directory
+        project_root = Path(__file__).parent.parent
+        workflows_dir = project_root / "workflows"
+        
+        self.logger.info(f"Looking for workflow: {workflow_name}")
+        self.logger.info(f"Workflows directory: {workflows_dir}")
+        
+        # Try to find workflow file by name
+        # Support both exact match and fuzzy match (e.g., "web" -> "web_pentest.yaml")
+        workflow_file = None
+        
+        # Check for exact match first
+        exact_file = workflows_dir / f"{workflow_name}.yaml"
+        self.logger.debug(f"Checking exact match: {exact_file}")
+        if exact_file.exists():
+            workflow_file = exact_file
+            self.logger.info(f"Found exact match: {workflow_file.name}")
+        else:
+            # Fuzzy search - find file that matches workflow_name
+            # Check if file stem is IN workflow name OR workflow name is IN file stem
+            self.logger.debug(f"Trying fuzzy match for: {workflow_name}")
+            for yaml_file in workflows_dir.glob("*.yaml"):
+                file_stem = yaml_file.stem.lower()
+                workflow_lower = workflow_name.lower()
+                
+                self.logger.debug(f"  Checking: {yaml_file.stem}")
+                
+                # Match if file stem is in workflow name (e.g., web_pentest in web_application_pentest)
+                # OR if workflow name is in file stem (e.g., web in web_pentest)
+                if file_stem in workflow_lower or workflow_lower in file_stem:
+                    workflow_file = yaml_file
+                    self.logger.info(f"Found fuzzy match: {workflow_file.name} for {workflow_name}")
+                    break
+        
+        if not workflow_file:
+            self.logger.warning(f"Workflow file not found for: {workflow_name}")
+            self.logger.warning("Using fallback workflow with basic steps")
+            # Fallback to basic recon workflow
+            return [
                 {"name": "subdomain_discovery", "type": "tool", "tool": "subfinder"},
                 {"name": "port_scanning", "type": "tool", "tool": "nmap"},
-                {"name": "web_probing", "type": "tool", "tool": "httpx"},
-                {"name": "analysis", "type": "analysis"},
-            ],
-            "web": [
-                {"name": "web_discovery", "type": "tool", "tool": "httpx"},
-                {"name": "vulnerability_scan", "type": "tool", "tool": "nuclei"},
-                {"name": "analysis", "type": "analysis"},
-            ],
-            "network": [
-                {"name": "port_scan", "type": "tool", "tool": "nmap"},
-                {"name": "service_detection", "type": "tool", "tool": "nmap"},
-                {"name": "vulnerability_scan", "type": "tool", "tool": "nuclei"},
                 {"name": "analysis", "type": "analysis"},
             ]
-        }
         
-        return workflows.get(workflow_name, workflows["recon"])
+        # Load YAML workflow
+        try:
+            self.logger.info(f"Loading workflow file: {workflow_file}")
+            with open(workflow_file, 'r', encoding='utf-8') as f:
+                workflow_data = yaml.safe_load(f)
+            
+            self.logger.info(f"Successfully loaded workflow from: {workflow_file.name}")
+            
+            # Extract steps from YAML
+            steps = workflow_data.get('steps', [])
+            self.logger.info(f"Workflow has {len(steps)} steps")
+            
+            # Log each step for debugging
+            for i, step in enumerate(steps):
+                self.logger.debug(f"  Step {i+1}: {step.get('name')} (type: {step.get('type')})")
+            
+            # Store workflow settings for potential use
+            self.workflow_settings = workflow_data.get('settings', {})
+            
+            return steps
+            
+        except Exception as e:
+            self.logger.error(f"Failed to load workflow from {workflow_file}: {e}")
+            self.logger.error(f"Exception details: {type(e).__name__}: {str(e)}")
+            # Fallback to basic workflow
+            return [
+                {"name": "basic_scan", "type": "tool", "tool": "nmap"},
+                {"name": "analysis", "type": "analysis"},
+            ]
+
     
     def _maybe_advance_phase(self):
         """Advance to next phase based on progress"""

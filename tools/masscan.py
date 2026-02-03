@@ -18,15 +18,19 @@ class MasscanTool(BaseTool):
     
     def get_command(self, target: str, **kwargs) -> List[str]:
         """Build masscan command"""
+        # Get config defaults
         config = self.config.get("tools", {}).get("masscan", {})
         safe_mode = self.config.get("pentest", {}).get("safe_mode", True)
+        
+        # Workflow parameters override config
+        # Priority: kwargs (workflow) > config > hardcoded defaults
         
         command = ["masscan"]
         
         # Target
         command.append(target)
         
-        # Ports
+        # Ports - workflow parameter or config or default
         ports = kwargs.get("ports", config.get("ports", "1-1000"))
         command.extend(["-p", ports])
         
@@ -41,27 +45,34 @@ class MasscanTool(BaseTool):
             rate = kwargs.get("rate", config.get("rate", 1000))
         command.extend(["--rate", str(rate)])
         
-        # Banners (grab service banners)
+        # Banners (grab service banners) - workflow parameter or config or default
         if kwargs.get("banners", config.get("banners", False)):
             command.append("--banners")
         
-        # Exclude targets (for safety)
-        exclude = config.get("exclude", [])
+        # Exclude targets (for safety) - workflow parameter or config
+        exclude = kwargs.get("exclude", config.get("exclude", []))
         if exclude:
-            for exc in exclude:
-                command.extend(["--exclude", exc])
+            if isinstance(exclude, str):
+                command.extend(["--exclude", exclude])
+            else:
+                for exc in exclude:
+                    command.extend(["--exclude", exc])
         
-        # Wait time (how long to wait for responses)
-        wait = config.get("wait", 10)
+        # Wait time (how long to wait for responses) - workflow parameter or config or default
+        wait = kwargs.get("wait", config.get("wait", 10))
         command.extend(["--wait", str(wait)])
         
         # Interface (if specified)
         if "interface" in kwargs:
             command.extend(["-e", kwargs["interface"]])
+        elif "interface" in config:
+            command.extend(["-e", config["interface"]])
         
         # Source port
         if "source_port" in kwargs:
             command.extend(["--source-port", str(kwargs["source_port"])])
+        elif "source_port" in config:
+            command.extend(["--source-port", str(config["source_port"])])
         
         return command
     

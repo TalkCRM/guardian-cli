@@ -76,9 +76,18 @@ def init_command(
 
 def _copy_default_config(dest: Path):
     """Copy default configuration file"""
-    # In production, this would copy from package data
-    # For now, create a minimal config
-    default_config = """# Guardian Configuration
+    # Get the path to the config template in the project
+    project_root = Path(__file__).parent.parent.parent
+    template_config = project_root / "config" / "guardian.yaml"
+    
+    if template_config.exists():
+        # Copy the template config file
+        shutil.copy2(template_config, dest)
+        console.print(f"[green]✓[/green] Created configuration file at {dest}")
+    else:
+        # Fallback to minimal config if template not found
+        console.print(f"[yellow]⚠[/yellow] Template config not found at {template_config}, using fallback")
+        default_config = """# Guardian Configuration
 ai:
   provider: gemini
   model: gemini-2.5-pro
@@ -101,8 +110,8 @@ scope:
     - 172.16.0.0/12
     - 192.168.0.0/16
 """
-    
-    with open(dest, 'w') as f:
-        f.write(default_config)
-    
-    console.print(f"[green]✓[/green] Created configuration file at {dest}")
+        
+        with open(dest, 'w') as f:
+            f.write(default_config)
+        
+        console.print(f"[green]✓[/green] Created configuration file at {dest}")

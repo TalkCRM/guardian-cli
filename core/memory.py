@@ -24,6 +24,8 @@ class Finding:
     remediation: Optional[str] = None
     cvss_score: Optional[float] = None
     false_positive: bool = False
+    execution_id: Optional[str] = None  # Link to ToolExecution
+    raw_evidence: Optional[str] = None  # Full command output section
 
 
 @dataclass
@@ -37,6 +39,7 @@ class ToolExecution:
     output: str
     duration: float
     findings_count: int = 0
+    id: Optional[str] = None  # Unique execution ID for linking
 
 
 class PentestMemory:
