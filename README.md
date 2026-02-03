@@ -10,7 +10,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-**Guardian** is an enterprise-grade AI-powered penetration testing automation framework that combines the strategic reasoning of Google Gemini with battle-tested security tools to deliver intelligent, adaptive security assessments.
+**Guardian** is an enterprise-grade AI-powered penetration testing automation framework that combines multiple AI providers (OpenAI GPT-4, Claude, Google Gemini, OpenRouter) with battle-tested security tools to deliver intelligent, adaptive security assessments with comprehensive evidence capture.
 
 [Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
@@ -33,22 +33,39 @@
 
 ## ✨ Features
 
-### 🤖 AI-Powered Intelligence
+### 🤖 Multi-Provider AI Intelligence
 
+- **4 AI Providers Supported**: OpenAI (GPT-4o), Anthropic (Claude), Google (Gemini), OpenRouter
+- **Flexible Provider Selection**: Switch between providers via config or command-line
 - **Multi-Agent Architecture**: Specialized AI agents (Planner, Tool Selector, Analyst, Reporter) collaborate for comprehensive security assessments
-- **Strategic Decision Making**: Google Gemini analyzes findings and determines optimal next steps
+- **Strategic Decision Making**: AI analyzes findings and determines optimal next steps
 - **Adaptive Testing**: AI adjusts tactics based on discovered vulnerabilities and system responses
 - **False Positive Filtering**: Intelligent analysis reduces noise and focuses on real vulnerabilities
 
 ### 🛠️ Extensive Tool Arsenal
 
-**15 Integrated Security Tools:**
-- **Network**: Nmap (comprehensive port scanning), Masscan (ultra-fast scanning)
-- **Web Reconnaissance**: httpx (HTTP probing), WhatWeb (technology fingerprinting), Wafw00f (WAF detection)
-- **Subdomain Discovery**: Subfinder (passive enumeration), Amass (active/passive mapping)
+**19 Integrated Security Tools:**
+- **Network**: Nmap (comprehensive scanning), Masscan (ultra-fast scanning)
+- **Web Reconnaissance**: httpx (HTTP probing), WhatWeb (tech fingerprinting), Wafw00f (WAF detection)
+- **Subdomain Discovery**: Subfinder (passive enumeration), Amass (active/passive mapping), DNSRecon (DNS analysis)
 - **Vulnerability Scanning**: Nuclei (template-based), Nikto (web vulnerabilities), SQLMap (SQL injection), WPScan (WordPress)
-- **SSL/TLS Testing**: TestSSL (cipher analysis), SSLyze (advanced configuration analysis)
-- **Content Discovery**: Gobuster (directory brute forcing), FFuf (advanced web fuzzing)
+- **SSL/TLS Testing**: TestSSL (cipher analysis), SSLyze (advanced configuration)
+- **Content Discovery**: Gobuster (directory brute forcing), FFuf (advanced web fuzzing), Arjun (parameter discovery)
+- **Security Analysis**: XSStrike (XSS detection), GitLeaks (secret scanning), CMSeeK (CMS detection)
+
+### 📊 Enhanced Evidence Capture
+
+- **Execution Traceability**: Every finding linked to its source tool execution
+- **Complete Command History**: Full tool output preserved with each finding
+- **Raw Evidence Storage**: 2000-character snippets of actual tool output
+- **Session Reconstruction**: Ability to review exact commands and outputs from any scan
+
+### 🔄 Smart Workflow System
+
+- **Parameter Priority**: Workflow parameters override config defaults
+- **Self-Contained Workflows**: Each workflow defines its own tool parameters
+- **Fuzzy Matching**: Intelligent workflow file discovery and loading
+- **Multiple Report Formats**: Markdown, HTML, and JSON with evidence inclusion
 
 ### 🔒 Security & Compliance
 
@@ -57,11 +74,12 @@
 - **Human-in-the-Loop**: Configurable confirmation prompts for sensitive operations
 - **Safe Mode**: Prevents destructive actions by default
 
-### 📊 Professional Reporting
+### 📋 Professional Reporting
 
 - **Multiple Formats**: Markdown, HTML, and JSON reports
 - **Executive Summaries**: Non-technical overviews for stakeholders
 - **Technical Deep-Dives**: Detailed findings with evidence and remediation steps
+- **Evidence Sections**: Raw tool output embedded in reports
 - **AI Decision Traces**: Full transparency into AI reasoning process
 
 ### ⚡ Performance & Efficiency
@@ -77,7 +95,11 @@
 ### Required
 
 - **Python 3.11 or higher** ([Download](https://www.python.org/downloads/))
-- **Google Account** (for Antigravity Authentication)
+- **AI Provider API Key** (Choose one):
+  - OpenAI API Key ([Get it here](https://platform.openai.com/api-keys))
+  - Anthropic API Key ([Get it here](https://console.anthropic.com/))
+  - Google AI Studio API Key ([Get it here](https://makersuite.google.com/app/apikey))
+  - OpenRouter API Key ([Get it here](https://openrouter.ai/keys))
 - **Git** (for cloning repository)
 
 ### Optional Tools (for full functionality)
@@ -102,7 +124,7 @@ Guardian can intelligently use these tools if installed:
 | **gobuster** | Directory brute | `go install github.com/OJ/gobuster/v3@latest` |
 | **ffuf** | Web fuzzing | `go install github.com/ffuf/ffuf/v2@latest` |
 | **arjun** | Parameter discovery | `pip install arjun` |
-| **xsstrike** | Advanced XSS | `git clone ...` |
+| **xsstrike** | Advanced XSS | `git clone https://github.com/s0md3v/XSStrike` |
 | **gitleaks** | Secret scanning | `go install github.com/zricethezav/gitleaks/v8@latest` |
 | **cmseek** | CMS detection | `pip install cmseek` |
 | **dnsrecon** | DNS enumeration | `pip install dnsrecon` |
@@ -113,45 +135,14 @@ Guardian can intelligently use these tools if installed:
 
 ## 🚀 Installation
 
-### Option 1: Docker (Recommended - All Tools Included) 🐳
-
-**Easiest and fastest way to get started with all 15 security tools pre-installed!**
-
-```bash
-# Clone repository
-git clone https://github.com/zakirkun/guardian-cli.git
-cd guardian-cli
-
-# Create .env file (optional, for other settings)
-touch .env
-
-# Build Docker image (one-time, ~5 minutes)
-docker-compose build
-
-# Run Guardian
-docker-compose run --rm guardian recon --domain example.com
-```
-
-**Benefits:**
-- ✅ All 15 tools pre-installed (nmap, httpx, nuclei, sqlmap, etc.)
-- ✅ No manual tool installation required
-- ✅ Consistent environment across all systems
-- ✅ Isolated and secure
-
-**See [Docker Guide](docs/DOCKER.md) for advanced usage.**
-
----
-
-### Option 2: Local Installation (Customizable)
-
-#### Step 1: Clone Repository
+### Step 1: Clone Repository
 
 ```bash
 git clone https://github.com/zakirkun/guardian-cli.git
 cd guardian-cli
 ```
 
-#### Step 2: Set Up Python Environment
+### Step 2: Set Up Python Environment
 
 **Linux/macOS:**
 ```bash
@@ -167,50 +158,60 @@ python -m venv venv
 pip install -e .
 ```
 
-#### Step 3: Initialize Configuration
+### Step 3: Configure AI Provider
+
+Guardian supports multiple AI providers. Configure your preferred provider in `config/guardian.yaml`:
+
+```yaml
+# config/guardian.yaml
+ai:
+  # Choose your provider: openai, claude, gemini, or openrouter
+  provider: openai
+  
+  # OpenAI Configuration (recommended)
+  openai:
+    model: gpt-4o
+    api_key: sk-your-api-key-here  # Or set OPENAI_API_KEY env var
+  
+  # Claude Configuration
+  claude:
+    model: claude-3-5-sonnet-20241022
+    api_key: null  # Or set ANTHROPIC_API_KEY env var
+  
+  # Gemini Configuration
+  gemini:
+    model: gemini-2.5-pro
+    api_key: null  # Or set GOOGLE_API_KEY env var
+  
+  # OpenRouter Configuration
+  openrouter:
+    model: anthropic/claude-3.5-sonnet
+    api_key: null  # Or set OPENROUTER_API_KEY env var
+```
+
+**Or use environment variables:**
 
 ```bash
 # Linux/macOS
-python -m cli.main init
+export OPENAI_API_KEY="sk-your-key-here"
+export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+export GOOGLE_API_KEY="your-gemini-key"
+export OPENROUTER_API_KEY="your-router-key"
 
-# Windows
-python -m cli.main init
-# or use the batch launcher
-.\guardian.bat init
+# Windows PowerShell
+$env:OPENAI_API_KEY="sk-your-key-here"
+$env:ANTHROPIC_API_KEY="sk-ant-your-key-here"
 ```
 
-
-#### Step 4: Configure Authentication
-
-Guardian supports two authentication methods. Choose the one that suits you best:
-
-**Method A: Antigravity Auth (Recommended for free, quota-based access)**
-This method uses your Google Account cookies to access Gemini models via internal quotas.
+### Step 4: Initialize Configuration
 
 ```bash
-python -m cli.main auth login
+# Verify installation
+python -m cli.main --help
+
+# Check AI provider status
+python -m cli.main models
 ```
-This will open your browser to log in with your Google account.
-
-**Method B: Standard Gemini API Key (For BYO Key)**
-This method uses your personal Google AI Studio API Key.
-
-1. Get your API Key from [Google AI Studio](https://makersuite.google.com/app/apikey).
-2. Set the environment variable:
-   ```bash
-   # Linux/macOS
-   export GOOGLE_API_KEY="your_api_key_here"
-   
-   # Windows PowerShell
-   $env:GOOGLE_API_KEY="your_api_key_here"
-   ```
-3. (Optional) Create a `.env` file in the project root:
-   ```bash
-   echo "GOOGLE_API_KEY=your_api_key_here" > .env
-   ```
-
-Guardian will automatically detect which method to use. You can also enforce a specific method in `config/guardian.yaml` by setting `auth_method` to `antigravity` or `api_key`.
-
 
 ---
 
@@ -222,17 +223,26 @@ Guardian will automatically detect which method to use. You can also enforce a s
 # List available workflows
 python -m cli.main workflow list
 
-# Dry run (see execution plan without running)
-python -m cli.main recon --domain example.com --dry-run
+# View AI providers and models
+python -m cli.main models
+
+# Run with specific provider
+python -m cli.main workflow run --name web_pentest --target example.com --provider openai
 ```
 
 ### Example Usage Scenarios
 
-#### 1. Quick Web Application Scan
+#### 1. Quick Web Application Pen Test
 ```bash
-# Fast security check of a web application
-python -m cli.main workflow run --name web --target https://example.com
+# Fast security check with evidence capture
+python -m cli.main workflow run --name web_pentest --target https://dvwa.csalab.app
 ```
+
+**Expected Output:**
+- ✅ HTTP discovery with httpx
+- ✅ Vulnerability scan with nuclei
+- ✅ Full evidence linking (commands + outputs)
+- ✅ Markdown report with findings
 
 #### 2. Comprehensive Network Assessment
 ```bash
@@ -240,55 +250,141 @@ python -m cli.main workflow run --name web --target https://example.com
 python -m cli.main workflow run --name network --target 192.168.1.0/24
 ```
 
-#### 3. Subdomain Reconnaissance
+#### 3. Custom Workflow with Parameters
 ```bash
-# Discover and analyze subdomains
-python -m cli.main recon --domain example.com
+# Run with workflow-specific parameters
+# Parameters in workflow YAML override config defaults
+python -m cli.main workflow run --name web_pentest --target example.com
 ```
 
-#### 4. Autonomous AI-Driven Test
+**Workflow Parameter Priority:**
+1. Workflow YAML parameters (highest priority)
+2. Config file parameters
+3. Tool defaults (lowest priority)
+
+#### 4. Generate Report from Session
 ```bash
-# Let AI decide each step dynamically
-python -m cli.main workflow run --name autonomous --target example.com
+# Create HTML report with evidence
+python -m cli.main report --session 20260203_175905 --format html
 ```
 
-#### 5. Generate Professional Report
+#### 5. Switch AI Providers
 ```bash
-# Create HTML report from previous scan
-python -m cli.main report --session 20251222_120000 --format html
+# Use OpenAI GPT-4
+python -m cli.main workflow run --name web_pentest --target example.com --provider openai
+
+# Use Claude
+python -m cli.main workflow run --name web_pentest --target example.com --provider claude
+
+# Use Gemini
+python -m cli.main workflow run --name web_pentest --target example.com --provider gemini
 ```
 
-#### 6. Explain AI Decisions
-```bash
-# View AI decision-making process
-python -m cli.main ai --last
+> **Windows Users**: Use `python -m cli.main` instead of `guardian`
+
+---
+
+## 🔧 Configuration
+
+### Complete Configuration Reference
+
+Edit `config/guardian.yaml` to customize Guardian's behavior:
+
+```yaml
+# AI Configuration
+ai:
+  provider: openai  # openai, claude, gemini, openrouter
+  
+  openai:
+    model: gpt-4o
+    api_key: sk-your-key  # Or use OPENAI_API_KEY env var
+  
+  claude:
+    model: claude-3-5-sonnet-20241022
+    api_key: null
+  
+  gemini:
+    model: gemini-2.5-pro
+    api_key: null
+  
+  temperature: 0.2
+  max_tokens: 8000
+
+# Penetration Testing Settings
+pentest:
+  safe_mode: true              # Prevent destructive actions
+  require_confirmation: true   # Confirm before each step
+  max_parallel_tools: 3        # Concurrent tool execution
+  max_depth: 3                 # Maximum scan depth
+  tool_timeout: 300            # Tool timeout in seconds
+
+# Output Configuration
+output:
+  format: markdown             # markdown, html, json
+  save_path: ./reports
+  include_reasoning: true
+  verbosity: normal            # quiet, normal, verbose, debug
+
+# Scope Validation
+scope:
+  blacklist:                   # Never scan these
+    - 127.0.0.0/8
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+  require_scope_file: false
+  max_targets: 100
+
+# Tool Configuration (defaults)
+tools:
+  httpx:
+    threads: 50
+    timeout: 10
+    tech_detect: true
+  
+  nuclei:
+    severity: ["critical", "high", "medium"]
+    templates_path: ~/nuclei-templates
+  
+  nmap:
+    default_args: "-sV -sC"
+    timing: T4
 ```
 
-#### 7. Use Specific AI Models
-```bash
-# List available models
-python -m cli.main models
+### Workflow Parameters
+
+Create custom workflows in `workflows/` directory:
+
+```yaml
+# workflows/custom_web.yaml
+name: custom_web_assessment
+description: Custom web security testing
+
+steps:
+  - name: http_discovery
+    type: tool
+    tool: httpx
+    parameters:
+      threads: 100        # Override config default (50)
+      timeout: 15         # Override config default (10)
+      tech_detect: true
+  
+  - name: vulnerability_scan
+    type: tool
+    tool: nuclei
+    parameters:
+      severity: ["critical", "high"]  # Override config
+      templates_path: ".shared/nuclei/templates/"
+  
+  - name: generate_report
+    type: report
+    # Format will use config default (markdown)
 ```
 
-**Available Models:**
-| Model Name | Provider | Source | Capabilities |
-|------------|----------|--------|--------------|
-| `gemini-3-pro` | Google | Antigravity | Reasoning, High Intelligence |
-| `gemini-3-flash` | Google | Antigravity | Reasoning, Speed |
-| `gemini-2.5-pro` | Google | Gemini CLI | General Purpose, Stable |
-| `gemini-2.5-flash` | Google | Gemini CLI | Lower Latency, Cost Effective |
-| `claude-sonnet-4-5`| Anthropic| Antigravity | Advanced Reasoning, Coding |
-| `claude-opus-4-5` | Anthropic| Antigravity | Maximum Capability |
-
-```bash
-# Recon with Gemini 3 Pro
-python -m cli.main recon --domain example.com --model gemini-3-pro
-
-# Workflow with Gemini 3 Flash
-python -m cli.main workflow run --name web --target example.com --model gemini-3-flash
-```
-
-> **Windows Users**: Use `python -m cli.main` or `.\guardian.bat` instead of `guardian`
+**Parameter Priority:**
+- Workflow parameters **override** config parameters
+- Config parameters **override** tool defaults
+- Self-contained, reusable workflows
 
 ---
 
@@ -296,19 +392,42 @@ python -m cli.main workflow run --name web --target example.com --model gemini-3
 
 ### User Guides
 - **[Quick Start Guide](QUICKSTART.md)** - Get up and running in 5 minutes
-- **[Docker Deployment Guide](docs/DOCKER.md)** - Run Guardian with Docker (recommended)
 - **[Command Reference](docs/)** - Detailed documentation for all commands
-- **[Configuration Guide](config/guardian.yaml)** - Customize Guardian's behavior
+- **[Configuration Guide](config/guardian.yaml)** - Complete configuration reference
+- **[Workflow Guide](docs/WORKFLOW_GUIDE.md)** - Creating custom workflows
 
 ### Developer Guides
 - **[Creating Custom Tools](docs/TOOLS_DEVELOPMENT_GUIDE.md)** - Build your own tool integrations
 - **[Workflow Development](docs/WORKFLOW_GUIDE.md)** - Create custom testing workflows
 - **[Available Tools](tools/README.md)** - Overview of integrated tools
 
-### Architecture
-- **Multi-Agent System**: Planner → Tool Selector → Analyst → Reporter
-- **AI-Driven**: Google Gemini for strategic decision-making
-- **Modular**: Easy to extend with new tools and workflows
+### Architecture Overview
+
+```
+Guardian Architecture:
+┌─────────────────────────────────────────┐
+│         AI Provider Layer               │
+│  (OpenAI, Claude, Gemini, OpenRouter)   │
+└─────────────────────────────────────────┘
+                 │
+┌─────────────────────────────────────────┐
+│       Multi-Agent System                │
+│  Planner → Tool Agent → Analyst →      │
+│            Reporter                      │
+└─────────────────────────────────────────┘
+                 │
+┌─────────────────────────────────────────┐
+│      Workflow Engine                    │
+│  - Parameter Priority                   │
+│  - Evidence Capture                     │
+│  - Session Management                   │
+└─────────────────────────────────────────┘
+                 │
+┌─────────────────────────────────────────┐
+│      Tool Integration Layer             │
+│  (19 Security Tools)                    │
+└─────────────────────────────────────────┘
+```
 
 ---
 
@@ -316,7 +435,13 @@ python -m cli.main workflow run --name web --target example.com --model gemini-3
 
 ```
 guardian-cli/
-├── ai/                    # AI integration (Gemini client, prompts)
+├── ai/                    # AI integration
+│   └── providers/         # Multi-provider support
+│       ├── base_provider.py
+│       ├── openai_provider.py
+│       ├── claude_provider.py
+│       ├── gemini_provider.py
+│       └── openrouter_provider.py
 ├── cli/                   # Command-line interface
 │   └── commands/         # CLI commands (init, scan, recon, etc.)
 ├── core/                  # Core agent system
@@ -353,26 +478,29 @@ guardian-cli/
 
 ---
 
-## 🔧 Configuration
+## 🆕 Latest Updates
 
-Edit `config/guardian.yaml` to customize:
+### Version 2.0.0 - Major Release
 
-```yaml
-ai:
-  provider: gemini
-  model: gemini-1.5-pro
-  temperature: 0.2
+#### ✨ Multi-Provider AI Support
+- **4 AI Providers**: OpenAI, Claude, Gemini, OpenRouter
+- **Easy Switching**: Configure via `config/guardian.yaml` or CLI flags
+- **Provider Abstraction**: Unified interface for all providers
 
-pentest:
-  safe_mode: true              # Prevent destructive actions
-  require_confirmation: true   # Confirm before each step
-  max_parallel_tools: 3        # Concurrent tool execution
+#### 📊 Evidence Capture System
+- **Execution Linking**: Every finding linked to its source tool execution
+- **Raw Evidence**: Full command output preserved (2000-char snippets)
+- **Traceability**: Reconstruct exact workflow execution from session files
 
-scope:
-  blacklist:                   # Never scan these
-    - 127.0.0.0/8
-    - 10.0.0.0/8
-```
+#### 🔄 Smart Workflow Parameters
+- **Priority System**: Workflow params > Config > Defaults
+- **Self-Contained**: Workflows define their own parameters
+- **No Conflicts**: Multiple workflows can use different settings for same tools
+
+#### 🐛 Bug Fixes
+- Fixed workflow fuzzy matching logic
+- Corrected report format handling
+- Improved YAML parsing with better error messages
 
 ---
 
@@ -397,16 +525,9 @@ pytest tests/
 black .
 ```
 
-### Contribution Guidelines
+### Contribution Areas
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Areas for Contribution
-
+- 🤖 **AI Provider Integrations** - Add more AI models
 - 🛠️ **New Tool Integrations** - Add more security tools
 - 🔄 **Custom Workflows** - Share your workflow templates
 - 🐛 **Bug Fixes** - Report and fix issues
@@ -419,13 +540,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📊 Roadmap
 
+- [x] Multi-provider AI support (OpenAI, Claude, Gemini, OpenRouter)
+- [x] Complete evidence capture with execution linking
+- [x] Workflow parameter priority system
 - [ ] Web Dashboard for visualization
 - [ ] PostgreSQL backend for multi-session tracking
 - [ ] MITRE ATT&CK mapping for findings
 - [ ] Plugin system for custom modules
 - [ ] Integration with CI/CD pipelines
-- [ ] Additional AI models support (Claude, GPT-4)
-- [ ] Mobile app for on-the-go assessments
+- [ ] Additional AI models (Llama, Mistral)
+- [ ] Real-time collaboration features
 
 ---
 
@@ -439,10 +563,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 pip install -e . --force-reinstall
 ```
 
-**API Rate Limits**
-- Free tier: 2 requests/minute
-- Switch to paid tier or implement request throttling
-- Configure in `config/guardian.yaml`: `ai.rate_limit: 60`
+**AI Provider Errors**
+```bash
+# Verify API key is set
+python -m cli.main models
+
+# Check provider configuration
+cat config/guardian.yaml | grep -A 5 "ai:"
+```
 
 **Tool Not Found**
 ```bash
@@ -453,13 +581,19 @@ which httpx
 # Install missing tools (see Prerequisites)
 ```
 
+**Workflow Not Loading**
+```bash
+# Check workflow file exists
+ls workflows/web_pentest.yaml
+
+# Verify YAML syntax
+python -c "import yaml; yaml.safe_load(open('workflows/web_pentest.yaml'))"
+```
+
 **Windows Command Not Found**
 ```powershell
 # Use full command
 python -m cli.main --help
-
-# Or use batch launcher
-.\guardian.bat --help
 ```
 
 For more help, [open an issue](https://github.com/zakirkun/guardian-cli/issues).
@@ -470,21 +604,13 @@ For more help, [open an issue](https://github.com/zakirkun/guardian-cli/issues).
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```
-MIT License
-
-Copyright (c) 2025 Guardian Project
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction...
-```
-
 ---
 
 ## 🙏 Acknowledgments
 
-- **Google Gemini** - AI capabilities
+- **OpenAI** - GPT-4 capabilities
+- **Anthropic** - Claude AI
+- **Google** - Gemini AI
 - **LangChain** - AI orchestration framework
 - **ProjectDiscovery** - Open-source security tools (httpx, subfinder, nuclei)
 - **Nmap** - Network exploration and security auditing
