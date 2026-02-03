@@ -12,7 +12,7 @@ pentest:
 output:
   format: markdown
   save_path: ./reports
-  verbosity: normal
+  verbosity: quiet
 
 scope:
   blacklist:

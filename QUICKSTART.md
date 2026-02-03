@@ -24,7 +24,17 @@
    ```
    Or use the batch launcher:
    ```cmd
-   .\guardian.bat init
+5. **Configure Authentication**:
+
+   **Option A: Antigravity Auth (Free/Quota)**
+   ```cmd
+   python -m cli.main auth login
+   ```
+
+   **Option B: Standard API Key**
+   Create a `.env` file with your key:
+   ```cmd
+   echo GOOGLE_API_KEY=your_key_here > .env
    ```
 
 ## Common Commands
@@ -47,6 +57,11 @@ python -m cli.main scan --target scanme.nmap.org
 ### Run Full Workflow
 ```cmd
 python -m cli.main workflow run --name recon --target example.com
+```
+
+### Run with Specific AI Model
+```cmd
+python -m cli.main recon --domain example.com --model gemini-3-pro
 ```
 
 ## Configuration

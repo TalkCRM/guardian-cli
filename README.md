@@ -77,7 +77,7 @@
 ### Required
 
 - **Python 3.11 or higher** ([Download](https://www.python.org/downloads/))
-- **Google Gemini API Key** ([Get Free API Key](https://makersuite.google.com/app/apikey))
+- **Google Account** (for Antigravity Authentication)
 - **Git** (for cloning repository)
 
 ### Optional Tools (for full functionality)
@@ -119,11 +119,11 @@ Guardian can intelligently use these tools if installed:
 
 ```bash
 # Clone repository
-git clone https://github.com/zakirkun/guardian-cli.git
+git clone https://github.com/firdyfirdy/guardian-cli.git
 cd guardian-cli
 
-# Create .env file with your API key
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
+# Create .env file (optional, for other settings)
+touch .env
 
 # Build Docker image (one-time, ~5 minutes)
 docker-compose build
@@ -147,7 +147,7 @@ docker-compose run --rm guardian recon --domain example.com
 #### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/zakirkun/guardian-cli.git
+git clone https://github.com/firdyfirdy/guardian-cli.git
 cd guardian-cli
 ```
 
@@ -179,11 +179,38 @@ python -m cli.main init
 .\guardian.bat init
 ```
 
-During initialization, you'll be prompted for your Gemini API key. Alternatively, create a `.env` file:
+
+#### Step 4: Configure Authentication
+
+Guardian supports two authentication methods. Choose the one that suits you best:
+
+**Method A: Antigravity Auth (Recommended for free, quota-based access)**
+This method uses your Google Account cookies to access Gemini models via internal quotas.
 
 ```bash
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
+python -m cli.main auth login
 ```
+This will open your browser to log in with your Google account.
+
+**Method B: Standard Gemini API Key (For BYO Key)**
+This method uses your personal Google AI Studio API Key.
+
+1. Get your API Key from [Google AI Studio](https://makersuite.google.com/app/apikey).
+2. Set the environment variable:
+   ```bash
+   # Linux/macOS
+   export GOOGLE_API_KEY="your_api_key_here"
+   
+   # Windows PowerShell
+   $env:GOOGLE_API_KEY="your_api_key_here"
+   ```
+3. (Optional) Create a `.env` file in the project root:
+   ```bash
+   echo "GOOGLE_API_KEY=your_api_key_here" > .env
+   ```
+
+Guardian will automatically detect which method to use. You can also enforce a specific method in `config/guardian.yaml` by setting `auth_method` to `antigravity` or `api_key`.
+
 
 ---
 
@@ -235,6 +262,30 @@ python -m cli.main report --session 20251222_120000 --format html
 ```bash
 # View AI decision-making process
 python -m cli.main ai --last
+```
+
+#### 7. Use Specific AI Models
+```bash
+# List available models
+python -m cli.main models
+```
+
+**Available Models:**
+| Model Name | Provider | Source | Capabilities |
+|------------|----------|--------|--------------|
+| `gemini-3-pro` | Google | Antigravity | Reasoning, High Intelligence |
+| `gemini-3-flash` | Google | Antigravity | Reasoning, Speed |
+| `gemini-2.5-pro` | Google | Gemini CLI | General Purpose, Stable |
+| `gemini-2.5-flash` | Google | Gemini CLI | Lower Latency, Cost Effective |
+| `claude-sonnet-4-5`| Anthropic| Antigravity | Advanced Reasoning, Coding |
+| `claude-opus-4-5` | Anthropic| Antigravity | Maximum Capability |
+
+```bash
+# Recon with Gemini 3 Pro
+python -m cli.main recon --domain example.com --model gemini-3-pro
+
+# Workflow with Gemini 3 Flash
+python -m cli.main workflow run --name web --target example.com --model gemini-3-flash
 ```
 
 > **Windows Users**: Use `python -m cli.main` or `.\guardian.bat` instead of `guardian`
@@ -333,7 +384,7 @@ We welcome contributions! Here's how:
 
 ```bash
 # Fork and clone
-git clone https://github.com/zakirkun/guardian-cli.git
+git clone https://github.com/firdyfirdy/guardian-cli.git
 cd guardian-cli
 
 # Install dev dependencies
@@ -411,7 +462,7 @@ python -m cli.main --help
 .\guardian.bat --help
 ```
 
-For more help, [open an issue](https://github.com/zakirkun/guardian-cli/issues).
+For more help, [open an issue](https://github.com/firdyfirdy/guardian-cli/issues).
 
 ---
 
@@ -443,8 +494,8 @@ in the Software without restriction...
 
 ## 📞 Support & Contact
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/zakirkun/guardian-cli/issues)
-- **Discussions**: [Join community discussions](https://github.com/zakirkun/guardian-cli/discussions)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/firdyfirdy/guardian-cli/issues)
+- **Discussions**: [Join community discussions](https://github.com/firdyfirdy/guardian-cli/discussions)
 - **Documentation**: [Read the docs](docs/)
 - **Security**: Report vulnerabilities privately to security@example.com
 
