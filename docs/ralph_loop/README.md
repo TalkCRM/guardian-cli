@@ -81,6 +81,9 @@ python3 scripts/aws_evidence_collect.py \
   --config config/ralph_loop.yaml
 ```
 
+환경 분류 규칙과 필터는 `config/ralph_loop.yaml`의 `env_classification`, `env_filter`를 사용합니다.
+운영 로그 포함이 필요하면 `--env-filter prod`를 명시하세요.
+
 ## 권장 운영 기준 (기본값)
 
 - 반복 횟수: 최대 3회

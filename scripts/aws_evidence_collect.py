@@ -16,6 +16,7 @@ from typing import Iterable
 
 import yaml
 
+
 def parse_iso(value: str) -> datetime:
     if "T" not in value:
         # date-only -> midnight UTC
@@ -62,6 +63,24 @@ def ensure_dir(path: Path) -> None:
 
 def sanitize_filename(value: str) -> str:
     return value.strip("/").replace("/", "_").replace(":", "_")
+
+
+def classify_env(name: str, rules: list[tuple[str, list[str]]]) -> str:
+    for label, patterns in rules:
+        for pattern in patterns:
+            if re.search(pattern, name, re.IGNORECASE):
+                return label
+    return "unknown"
+
+
+def build_env_rules(defaults: dict) -> list[tuple[str, list[str]]]:
+    cfg = defaults.get("env_classification", {})
+    if cfg:
+        return [(label, list(patterns)) for label, patterns in cfg.items()]
+    return [
+        ("staging", ["stg", "staging", "stage", "dev", "test", "sandbox"]),
+        ("prod", ["prod", "production"]),
+    ]
 
 
 def discover_log_groups(
@@ -252,9 +271,16 @@ def main() -> int:
         default=None,
         help="Write discovered log groups to file",
     )
+    parser.add_argument(
+        "--env-filter",
+        choices=["staging", "prod", "unknown", "all"],
+        default="all",
+        help="Filter discovered log groups by environment",
+    )
 
     args = parser.parse_args()
 
+    defaults: dict = {}
     if args.config:
         cfg = yaml.safe_load(Path(args.config).read_text(encoding="utf-8")) or {}
         defaults = cfg.get("aws_evidence", {})
@@ -278,6 +304,8 @@ def main() -> int:
             args.discover_prefix = defaults.get("discover_prefixes", args.discover_prefix)
         if not has("--discover-max-items"):
             args.discover_max_items = defaults.get("discover_max_items", args.discover_max_items)
+        if not has("--env-filter"):
+            args.env_filter = defaults.get("env_filter", args.env_filter)
 
         if defaults.get("log_groups") and not has("--log-group"):
             for lg in defaults.get("log_groups", []):
@@ -297,10 +325,13 @@ def main() -> int:
     ensure_dir(out_root)
 
     outputs: list[OutputFile] = []
-    discovered: dict[str, list[str]] = {}
+    discovered: dict[str, list[dict[str, str]]] = {}
+    env_rules = build_env_rules(defaults if args.config else {})
+    region_log_groups: dict[str, list[str]] = {r: [] for r in args.regions}
+
     if args.discover_log_groups:
         for region in args.regions:
-            discovered[region] = discover_log_groups(
+            groups = discover_log_groups(
                 args.profile,
                 region,
                 args.discover_prefix,
@@ -308,20 +339,32 @@ def main() -> int:
                 args.discover_max_items,
                 args.dry_run,
             )
+            classified = []
+            for group in groups:
+                env = classify_env(group, env_rules)
+                classified.append({"name": group, "env": env})
+                if args.env_filter == "all" or env == args.env_filter:
+                    region_log_groups[region].append(group)
+            discovered[region] = classified
         if args.discover_out and not args.dry_run:
             out_path = Path(args.discover_out)
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(json.dumps(discovered, indent=2), encoding="utf-8")
 
-        if not args.log_group:
-            # If no explicit log groups provided, use discovered ones.
-            for region, groups in discovered.items():
-                for group in groups:
-                    args.log_group.append(group)
+    if args.log_group:
+        for region in args.regions:
+            for group in args.log_group:
+                env = classify_env(group, env_rules)
+                if args.env_filter == "all" or env == args.env_filter:
+                    region_log_groups[region].append(group)
+
+    for region in region_log_groups:
+        region_log_groups[region] = sorted(set(region_log_groups[region]))
+
     for region in args.regions:
         if args.cloudtrail:
             outputs.append(collect_cloudtrail(out_root, args.profile, region, start, end, args.dry_run))
-        for lg in args.log_group:
+        for lg in region_log_groups[region]:
             outputs.append(collect_log_group(out_root, args.profile, region, lg, start, end, args.dry_run))
 
     # build manifest

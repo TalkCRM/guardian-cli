@@ -28,3 +28,15 @@ aws_evidence:
     - "/aws/apigateway"
     - "/ecs/"
   discover_max_items: 200
+  env_filter: "staging"
+  env_classification:
+    staging:
+      - "stg"
+      - "staging"
+      - "stage"
+      - "dev"
+      - "test"
+      - "sandbox"
+    prod:
+      - "prod"
+      - "production"
