@@ -8,11 +8,13 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
+import yaml
 
 def parse_iso(value: str) -> datetime:
     if "T" not in value:
@@ -222,6 +224,7 @@ def main() -> int:
     parser.add_argument("--s3-prefix", default="compliance-evidence", help="S3 prefix")
     parser.add_argument("--s3-region", default=None, help="S3 region override")
     parser.add_argument("--dry-run", action="store_true", help="Print commands only")
+    parser.add_argument("--config", default=None, help="Config YAML path")
     parser.add_argument(
         "--discover-log-groups",
         action="store_true",
@@ -251,6 +254,37 @@ def main() -> int:
     )
 
     args = parser.parse_args()
+
+    if args.config:
+        cfg = yaml.safe_load(Path(args.config).read_text(encoding="utf-8")) or {}
+        defaults = cfg.get("aws_evidence", {})
+
+        def has(flag: str) -> bool:
+            return flag in sys.argv
+
+        if not has("--profile"):
+            args.profile = defaults.get("profile", args.profile)
+        if not has("--regions"):
+            args.regions = defaults.get("regions", args.regions)
+        if not has("--s3-bucket"):
+            args.s3_bucket = defaults.get("s3_bucket", args.s3_bucket)
+        if not has("--s3-prefix"):
+            args.s3_prefix = defaults.get("s3_prefix", args.s3_prefix)
+        if not has("--discover-log-groups"):
+            args.discover_log_groups = defaults.get("discover_log_groups", args.discover_log_groups)
+        if not has("--discover-keywords"):
+            args.discover_keywords = defaults.get("discover_keywords", args.discover_keywords)
+        if not has("--discover-prefix") and defaults.get("discover_prefixes"):
+            args.discover_prefix = defaults.get("discover_prefixes", args.discover_prefix)
+        if not has("--discover-max-items"):
+            args.discover_max_items = defaults.get("discover_max_items", args.discover_max_items)
+
+        if defaults.get("log_groups") and not has("--log-group"):
+            for lg in defaults.get("log_groups", []):
+                args.log_group.append(lg)
+
+        if defaults.get("cloudtrail") is True and not has("--cloudtrail"):
+            args.cloudtrail = True
 
     if not args.regions:
         raise SystemExit("--regions is required (e.g., ap-northeast-2 us-east-1)")

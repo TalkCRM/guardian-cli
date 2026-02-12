@@ -63,28 +63,22 @@ python3 scripts/ralph_loop.py report \
 
 ```bash
 python3 scripts/periodic_review.py plan \
-  --cadence monthly \
+  --config config/ralph_loop.yaml \
   --year 2026 \
-  --weekday tue \
-  --week 2 \
-  --out docs/ralph_loop/periodic_plan_2026.md \
-  --create-runs \
-  --calendar-md docs/ralph_loop/periodic_calendar_2026.md \
-  --calendar-ics docs/ralph_loop/periodic_calendar_2026.ics
+  --create-runs
 ```
 
 ### 7. AWS 증거 수집 자동화 (읽기 전용)
 
 ```bash
 python3 scripts/aws_evidence_collect.py \
-  --profile sungmin \
-  --regions ap-northeast-2 us-east-1 \
   --discover-log-groups \
   --discover-out reports/ralph_loop/run-YYYY-MM-DD/discovered_log_groups.json \
   --cloudtrail \
   --start 2026-02-01 \
   --end 2026-02-02 \
-  --s3-bucket com.sungmin.networks.talkcrm
+  --s3-bucket com.sungmin.networks.talkcrm \
+  --config config/ralph_loop.yaml
 ```
 
 ## 권장 운영 기준 (기본값)

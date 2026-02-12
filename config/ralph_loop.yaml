@@ -1,0 +1,30 @@
+# Ralph Loop default configuration
+
+ralph_loop:
+  owner: "Security Team"
+  environment: "staging"
+  cadence: "monthly"
+  week: 2
+  weekday: "tue"
+  timezone: "Asia/Seoul"
+  window: "09:00-18:00"
+  plan_output: "docs/ralph_loop/periodic_plan.md"
+  calendar_md: "docs/ralph_loop/periodic_calendar.md"
+  calendar_ics: "docs/ralph_loop/periodic_calendar.ics"
+  run_output: "reports/ralph_loop"
+
+aws_evidence:
+  profile: "sungmin"
+  regions:
+    - "ap-northeast-2"
+    - "us-east-1"
+  s3_bucket: "com.sungmin.networks.talkcrm"
+  s3_prefix: "compliance-evidence"
+  discover_log_groups: true
+  discover_keywords: "aicc|talkcrm|llm|chat|rag|bedrock"
+  discover_prefixes:
+    - "/aws/lambda"
+    - "/aws/ecs"
+    - "/aws/apigateway"
+    - "/ecs/"
+  discover_max_items: 200

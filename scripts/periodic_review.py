@@ -12,6 +12,9 @@ from calendar import monthrange, month_name
 from datetime import date, datetime, time
 from pathlib import Path
 from typing import Iterable
+import sys
+
+import yaml
 
 
 def parse_weekday(value: str) -> int:
@@ -212,6 +215,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--calendar-md", default=None, help="Output markdown calendar path")
     plan.add_argument("--calendar-ics", default=None, help="Output ICS calendar path")
     plan.add_argument("--summary", default="Ralph Loop Review", help="Calendar event summary")
+    plan.add_argument("--config", default=None, help="Config YAML path")
 
     return parser
 
@@ -221,6 +225,38 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.cmd == "plan":
+        if args.config:
+            cfg = yaml.safe_load(Path(args.config).read_text(encoding="utf-8")) or {}
+            defaults = cfg.get("ralph_loop", {})
+
+            def has(flag: str) -> bool:
+                return flag in sys.argv
+
+            if not has("--cadence"):
+                args.cadence = defaults.get("cadence", args.cadence)
+            if not has("--year"):
+                args.year = defaults.get("year", args.year)
+            if not has("--weekday"):
+                args.weekday = defaults.get("weekday", args.weekday)
+            if not has("--week"):
+                args.week = defaults.get("week", args.week)
+            if not has("--timezone"):
+                args.timezone = defaults.get("timezone", args.timezone)
+            if not has("--window"):
+                args.window = defaults.get("window", args.window)
+            if not has("--owner"):
+                args.owner = defaults.get("owner", args.owner)
+            if not has("--env"):
+                args.env = defaults.get("environment", args.env)
+            if not has("--out"):
+                args.out = defaults.get("plan_output", args.out)
+            if not has("--runs-out"):
+                args.runs_out = defaults.get("run_output", args.runs_out)
+            if not has("--calendar-md"):
+                args.calendar_md = defaults.get("calendar_md", args.calendar_md)
+            if not has("--calendar-ics"):
+                args.calendar_ics = defaults.get("calendar_ics", args.calendar_ics)
+
         weekday = parse_weekday(args.weekday)
         write_plan(
             Path(args.out),
