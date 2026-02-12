@@ -5,6 +5,7 @@ Subcommands:
   init     Create a run folder with manifest and run log.
   validate Validate task YAML structure.
   summary  Generate a markdown summary from task YAML.
+  report   Generate a detailed report using a template.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from jinja2 import Template
 
 REQUIRED_FIELDS = ["id", "objective", "steps", "pass_criteria", "evidence", "max_iterations"]
 
@@ -106,6 +108,42 @@ def summary(paths: list[Path], out: Path) -> None:
     out.write_text("\n".join(lines), encoding="utf-8")
 
 
+def render_report(
+    paths: list[Path],
+    out: Path,
+    template_path: Path,
+    run_id: str,
+    owner: str,
+    environment: str,
+) -> None:
+    tasks = []
+    for path in paths:
+        for task in load_tasks(path):
+            tasks.append(
+                {
+                    "id": task.get("id", ""),
+                    "objective": task.get("objective", ""),
+                    "max_iterations": task.get("max_iterations", ""),
+                    "evidence": ", ".join(task.get("evidence", [])),
+                }
+            )
+
+    template_text = template_path.read_text(encoding="utf-8")
+    template = Template(template_text)
+    rendered = template.render(
+        run_id=run_id,
+        generated_at=datetime.utcnow().isoformat() + "Z",
+        owner=owner,
+        environment=environment,
+        tasks=tasks,
+        task_count=len(tasks),
+        max_iterations_default=max([t["max_iterations"] for t in tasks], default=3),
+    )
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(rendered, encoding="utf-8")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Ralph Loop helper")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -122,6 +160,18 @@ def build_parser() -> argparse.ArgumentParser:
     sum_p = sub.add_parser("summary", help="Generate summary markdown")
     sum_p.add_argument("--tasks", nargs="+", required=True, help="Task YAML paths")
     sum_p.add_argument("--out", required=True, help="Output markdown path")
+
+    rep_p = sub.add_parser("report", help="Generate detailed report from template")
+    rep_p.add_argument("--tasks", nargs="+", required=True, help="Task YAML paths")
+    rep_p.add_argument(
+        "--template",
+        default="docs/ralph_loop/summary_template.md",
+        help="Report template path",
+    )
+    rep_p.add_argument("--out", required=True, help="Output markdown path")
+    rep_p.add_argument("--run-id", default=None, help="Run ID (default: run-YYYY-MM-DD)")
+    rep_p.add_argument("--owner", default="Security Team", help="Owner name")
+    rep_p.add_argument("--env", default="staging", help="Environment")
 
     return parser
 
@@ -144,6 +194,20 @@ def main() -> int:
         paths = [Path(p) for p in args.tasks]
         summary(paths, Path(args.out))
         print(f"Summary written: {args.out}")
+        return 0
+
+    if args.cmd == "report":
+        paths = [Path(p) for p in args.tasks]
+        run_id = args.run_id or f"run-{datetime.utcnow().date().isoformat()}"
+        render_report(
+            paths,
+            Path(args.out),
+            Path(args.template),
+            run_id,
+            args.owner,
+            args.env,
+        )
+        print(f"Report written: {args.out}")
         return 0
 
     return 1

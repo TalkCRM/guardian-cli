@@ -18,8 +18,11 @@ docs/ralph_loop/
   README.md
   task_template.yaml
   run_log_template.md
+  summary_template.md
 scripts/
   ralph_loop.py
+  periodic_review.py
+  aws_evidence_collect.py
 ```
 
 ## 빠른 시작
@@ -46,6 +49,39 @@ python3 scripts/ralph_loop.py validate --tasks docs/ralph_loop/task_template.yam
 python3 scripts/ralph_loop.py summary \
   --tasks docs/ralph_loop/task_template.yaml \
   --out reports/ralph_loop/run-YYYY-MM-DD/summary.md
+```
+
+### 5. 상세 리포트 생성 (템플릿 기반)
+
+```bash
+python3 scripts/ralph_loop.py report \
+  --tasks docs/ralph_loop/task_template.yaml \
+  --out reports/ralph_loop/run-YYYY-MM-DD/report.md
+```
+
+### 6. 정기 점검 플랜 자동 생성
+
+```bash
+python3 scripts/periodic_review.py plan \
+  --cadence quarterly \
+  --year 2026 \
+  --weekday tue \
+  --week 2 \
+  --out docs/ralph_loop/periodic_plan_2026.md \
+  --create-runs
+```
+
+### 7. AWS 증거 수집 자동화 (읽기 전용)
+
+```bash
+python3 scripts/aws_evidence_collect.py \
+  --profile sungmin \
+  --regions ap-northeast-2 us-east-1 \
+  --log-group /aws/lambda/aicc-chat-invoker \
+  --cloudtrail \
+  --start 2026-02-01 \
+  --end 2026-02-02 \
+  --s3-bucket com.sungmin.networks.talkcrm
 ```
 
 ## 권장 운영 기준 (기본값)
