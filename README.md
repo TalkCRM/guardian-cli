@@ -392,6 +392,7 @@ steps:
 
 ### User Guides
 - **[Quick Start Guide](QUICKSTART.md)** - Get up and running in 5 minutes
+- **[Korean Quick Start Guide](docs/QUICKSTART_KO.md)** - 한국어 빠른 시작 가이드
 - **[Command Reference](docs/)** - Detailed documentation for all commands
 - **[Configuration Guide](config/guardian.yaml)** - Complete configuration reference
 - **[Workflow Guide](docs/WORKFLOW_GUIDE.md)** - Creating custom workflows

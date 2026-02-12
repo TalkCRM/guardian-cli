@@ -7,6 +7,7 @@ Welcome to Guardian - AI-Powered Penetration Testing CLI Tool
 ### Getting Started
 - [README.md](../README.md) - Quick start and overview
 - [QUICKSTART.md](../QUICKSTART.md) - Installation and basic usage
+- [QUICKSTART_KO.md](QUICKSTART_KO.md) - 한국어 빠른 시작 가이드
 
 ### Core Documentation
 - [USAGE.md](USAGE.md) - Detailed command reference (coming soon)
