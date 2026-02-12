@@ -14,6 +14,11 @@ Welcome to Guardian - AI-Powered Penetration Testing CLI Tool
 - [USAGE.md](USAGE.md) - Detailed command reference (coming soon)
 - [CONFIGURATION.md](CONFIGURATION.md) - Configuration guide (coming soon)
 
+## Compliance Pack (2026-02-12)
+- [2026-02-12_docs-1.md](2026-02-12_docs-1.md) - 범위/ROE/위험분석
+- [2026-02-12_docs-2.md](2026-02-12_docs-2.md) - OWASP LLM Top 10 통제 매트릭스
+- [2026-02-12_docs-3.md](2026-02-12_docs-3.md) - 테스트 실행/증거/보고
+
 ## Developer Guides
 
 ### Tool Development
