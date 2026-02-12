@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Periodic review planner for Ralph Loop.
 
-Creates a schedule (monthly or quarterly) and optionally initializes run folders.
+Creates a schedule (monthly or quarterly), optionally initializes run folders,
+and can output a calendar (.ics) or a monthly markdown calendar.
 """
 
 from __future__ import annotations
 
 import argparse
-from calendar import monthrange
-from datetime import date, datetime
+from calendar import monthrange, month_name
+from datetime import date, datetime, time
 from pathlib import Path
 from typing import Iterable
 
@@ -59,6 +60,20 @@ def iter_months(cadence: str, year: int) -> Iterable[int]:
     raise ValueError("cadence must be 'monthly' or 'quarterly'")
 
 
+def build_schedule(
+    year: int,
+    cadence: str,
+    weekday: int,
+    week_of_month: int,
+) -> list[tuple[str, date]]:
+    rows: list[tuple[str, date]] = []
+    for month in iter_months(cadence, year):
+        run_date = nth_weekday(year, month, weekday, week_of_month)
+        run_id = f"run-{run_date.isoformat()}"
+        rows.append((run_id, run_date))
+    return rows
+
+
 def write_plan(
     out: Path,
     year: int,
@@ -72,12 +87,10 @@ def write_plan(
     create_runs: bool,
     runs_out: Path,
 ) -> None:
-    rows = []
-    for month in iter_months(cadence, year):
-        run_date = nth_weekday(year, month, weekday, week_of_month)
-        run_id = f"run-{run_date.isoformat()}"
-        rows.append((run_id, run_date.isoformat(), window, timezone))
-        if create_runs:
+    schedule = build_schedule(year, cadence, weekday, week_of_month)
+    rows = [(run_id, run_date.isoformat(), window, timezone) for run_id, run_date in schedule]
+    if create_runs:
+        for run_id, run_date in schedule:
             run_dir = runs_out / run_id
             run_dir.mkdir(parents=True, exist_ok=True)
             (run_dir / "manifest.json").write_text(
@@ -85,7 +98,8 @@ def write_plan(
                 f"  \"run_id\": \"{run_id}\",\n"
                 f"  \"created_at\": \"{datetime.utcnow().isoformat()}Z\",\n"
                 f"  \"owner\": \"{owner}\",\n"
-                f"  \"environment\": \"{environment}\"\n"
+                f"  \"environment\": \"{environment}\",\n"
+                f"  \"planned_date\": \"{run_date.isoformat()}\"\n"
                 "}\n",
                 encoding="utf-8",
             )
@@ -112,6 +126,73 @@ def write_plan(
     out.write_text("\n".join(lines), encoding="utf-8")
 
 
+def write_calendar_md(
+    out: Path,
+    year: int,
+    cadence: str,
+    weekday: int,
+    week_of_month: int,
+) -> None:
+    schedule = build_schedule(year, cadence, weekday, week_of_month)
+    by_month: dict[int, list[date]] = {}
+    for _, run_date in schedule:
+        by_month.setdefault(run_date.month, []).append(run_date)
+
+    lines = [f"# Periodic Review Calendar ({year})", ""]
+    for month in iter_months(cadence, year):
+        lines.append(f"## {month_name[month]}")
+        dates = by_month.get(month, [])
+        if not dates:
+            lines.append("- (none)")
+        else:
+            for d in dates:
+                lines.append(f"- {d.isoformat()}")
+        lines.append("")
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
+
+
+def write_ics(
+    out: Path,
+    year: int,
+    cadence: str,
+    weekday: int,
+    week_of_month: int,
+    window: str,
+    timezone: str,
+    summary: str,
+) -> None:
+    schedule = build_schedule(year, cadence, weekday, week_of_month)
+    start_str, end_str = window.split("-", 1)
+    start_t = time.fromisoformat(start_str)
+    end_t = time.fromisoformat(end_str)
+
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//TalkCRM//RalphLoop//EN",
+        "CALSCALE:GREGORIAN",
+    ]
+    for run_id, run_date in schedule:
+        dt_start = datetime.combine(run_date, start_t)
+        dt_end = datetime.combine(run_date, end_t)
+        lines += [
+            "BEGIN:VEVENT",
+            f"UID:{run_id}@talkcrm",
+            f"DTSTAMP:{datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')}",
+            f"DTSTART;TZID={timezone}:{dt_start.strftime('%Y%m%dT%H%M%S')}",
+            f"DTEND;TZID={timezone}:{dt_end.strftime('%Y%m%dT%H%M%S')}",
+            f"SUMMARY:{summary}",
+            f"DESCRIPTION:Periodic Ralph Loop review ({run_id})",
+            "END:VEVENT",
+        ]
+    lines.append("END:VCALENDAR")
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Periodic review planner")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -128,6 +209,9 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--out", default="docs/ralph_loop/periodic_plan.md")
     plan.add_argument("--create-runs", action="store_true")
     plan.add_argument("--runs-out", default="reports/ralph_loop")
+    plan.add_argument("--calendar-md", default=None, help="Output markdown calendar path")
+    plan.add_argument("--calendar-ics", default=None, help="Output ICS calendar path")
+    plan.add_argument("--summary", default="Ralph Loop Review", help="Calendar event summary")
 
     return parser
 
@@ -151,6 +235,19 @@ def main() -> int:
             args.create_runs,
             Path(args.runs_out),
         )
+        if args.calendar_md:
+            write_calendar_md(Path(args.calendar_md), args.year, args.cadence, weekday, args.week)
+        if args.calendar_ics:
+            write_ics(
+                Path(args.calendar_ics),
+                args.year,
+                args.cadence,
+                weekday,
+                args.week,
+                args.window,
+                args.timezone,
+                args.summary,
+            )
         print(f"Plan written: {args.out}")
         return 0
 

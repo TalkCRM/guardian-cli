@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -59,6 +60,65 @@ def ensure_dir(path: Path) -> None:
 
 def sanitize_filename(value: str) -> str:
     return value.strip("/").replace("/", "_").replace(":", "_")
+
+
+def discover_log_groups(
+    profile: str | None,
+    region: str,
+    prefixes: list[str],
+    keywords: str,
+    max_items: int,
+    dry_run: bool,
+) -> list[str]:
+    pattern = re.compile(keywords, re.IGNORECASE)
+    found: set[str] = set()
+    for prefix in prefixes:
+        cmd = aws_cmd(
+            [
+                "logs",
+                "describe-log-groups",
+                "--log-group-name-prefix",
+                prefix,
+                "--max-items",
+                str(max_items),
+                "--output",
+                "json",
+            ],
+            profile,
+            region,
+        )
+        data = run_cmd(cmd, dry_run)
+        if dry_run:
+            continue
+        payload = json.loads(data)
+        for group in payload.get("logGroups", []):
+            name = group.get("logGroupName", "")
+            if pattern.search(name):
+                found.add(name)
+
+    if not prefixes:
+        cmd = aws_cmd(
+            [
+                "logs",
+                "describe-log-groups",
+                "--max-items",
+                str(max_items),
+                "--output",
+                "json",
+            ],
+            profile,
+            region,
+        )
+        data = run_cmd(cmd, dry_run)
+        if dry_run:
+            return sorted(found)
+        payload = json.loads(data)
+        for group in payload.get("logGroups", []):
+            name = group.get("logGroupName", "")
+            if pattern.search(name):
+                found.add(name)
+
+    return sorted(found)
 
 
 @dataclass
@@ -162,6 +222,33 @@ def main() -> int:
     parser.add_argument("--s3-prefix", default="compliance-evidence", help="S3 prefix")
     parser.add_argument("--s3-region", default=None, help="S3 region override")
     parser.add_argument("--dry-run", action="store_true", help="Print commands only")
+    parser.add_argument(
+        "--discover-log-groups",
+        action="store_true",
+        help="Discover log groups by keyword across regions",
+    )
+    parser.add_argument(
+        "--discover-keywords",
+        default="aicc|talkcrm|llm|chat|rag|bedrock",
+        help="Regex keywords for discovery",
+    )
+    parser.add_argument(
+        "--discover-prefix",
+        action="append",
+        default=["/aws/lambda", "/aws/ecs", "/aws/apigateway", "/ecs/"],
+        help="Log group prefix to scan (repeatable)",
+    )
+    parser.add_argument(
+        "--discover-max-items",
+        type=int,
+        default=200,
+        help="Max items per prefix query",
+    )
+    parser.add_argument(
+        "--discover-out",
+        default=None,
+        help="Write discovered log groups to file",
+    )
 
     args = parser.parse_args()
 
@@ -176,13 +263,32 @@ def main() -> int:
     ensure_dir(out_root)
 
     outputs: list[OutputFile] = []
+    discovered: dict[str, list[str]] = {}
+    if args.discover_log_groups:
+        for region in args.regions:
+            discovered[region] = discover_log_groups(
+                args.profile,
+                region,
+                args.discover_prefix,
+                args.discover_keywords,
+                args.discover_max_items,
+                args.dry_run,
+            )
+        if args.discover_out and not args.dry_run:
+            out_path = Path(args.discover_out)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(discovered, indent=2), encoding="utf-8")
+
+        if not args.log_group:
+            # If no explicit log groups provided, use discovered ones.
+            for region, groups in discovered.items():
+                for group in groups:
+                    args.log_group.append(group)
     for region in args.regions:
         if args.cloudtrail:
             outputs.append(collect_cloudtrail(out_root, args.profile, region, start, end, args.dry_run))
         for lg in args.log_group:
-            outputs.append(
-                collect_log_group(out_root, args.profile, region, lg, start, end, args.dry_run)
-            )
+            outputs.append(collect_log_group(out_root, args.profile, region, lg, start, end, args.dry_run))
 
     # build manifest
     manifest_path = Path(args.out) / run_id / "manifest.json"

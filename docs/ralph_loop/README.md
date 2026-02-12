@@ -63,12 +63,14 @@ python3 scripts/ralph_loop.py report \
 
 ```bash
 python3 scripts/periodic_review.py plan \
-  --cadence quarterly \
+  --cadence monthly \
   --year 2026 \
   --weekday tue \
   --week 2 \
   --out docs/ralph_loop/periodic_plan_2026.md \
-  --create-runs
+  --create-runs \
+  --calendar-md docs/ralph_loop/periodic_calendar_2026.md \
+  --calendar-ics docs/ralph_loop/periodic_calendar_2026.ics
 ```
 
 ### 7. AWS 증거 수집 자동화 (읽기 전용)
@@ -77,7 +79,8 @@ python3 scripts/periodic_review.py plan \
 python3 scripts/aws_evidence_collect.py \
   --profile sungmin \
   --regions ap-northeast-2 us-east-1 \
-  --log-group /aws/lambda/aicc-chat-invoker \
+  --discover-log-groups \
+  --discover-out reports/ralph_loop/run-YYYY-MM-DD/discovered_log_groups.json \
   --cloudtrail \
   --start 2026-02-01 \
   --end 2026-02-02 \
