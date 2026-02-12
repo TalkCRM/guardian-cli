@@ -19,6 +19,9 @@ Welcome to Guardian - AI-Powered Penetration Testing CLI Tool
 - [2026-02-12_docs-2.md](2026-02-12_docs-2.md) - OWASP LLM Top 10 통제 매트릭스
 - [2026-02-12_docs-3.md](2026-02-12_docs-3.md) - 테스트 실행/증거/보고
 
+## Ralph Loop
+- [ralph_loop/README.md](ralph_loop/README.md) - 운영 가이드 및 템플릿
+
 ## Developer Guides
 
 ### Tool Development
