@@ -172,7 +172,7 @@ ai:
 
   # OpenAI 설정 (권장)
   openai:
-    model: gpt-4o
+    model: gpt-4.1
     api_key: sk-your-api-key-here  # 또는 OPENAI_API_KEY env var 사용
 
   # Claude 설정
@@ -298,7 +298,7 @@ ai:
   provider: openai  # openai, claude, gemini, openrouter
 
   openai:
-    model: gpt-4o
+    model: gpt-4.1
     api_key: sk-your-key  # 또는 OPENAI_API_KEY env var 사용
 
   claude:

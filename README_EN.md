@@ -172,7 +172,7 @@ ai:
   
   # OpenAI Configuration (recommended)
   openai:
-    model: gpt-4o
+    model: gpt-4.1
     api_key: sk-your-api-key-here  # Or set OPENAI_API_KEY env var
   
   # Claude Configuration
@@ -298,7 +298,7 @@ ai:
   provider: openai  # openai, claude, gemini, openrouter
   
   openai:
-    model: gpt-4o
+    model: gpt-4.1
     api_key: sk-your-key  # Or use OPENAI_API_KEY env var
   
   claude:
